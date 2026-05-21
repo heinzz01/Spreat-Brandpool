@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spreat Brandpool</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --text:#16181d; --muted:#6b7280;
+    --border:#e6e8ec; --accent:#4f46e5; --accent-soft:#eef0fe;
+    --green:#059669; --green-soft:#e7f6f0; --radius:14px;
+    --shadow:0 1px 3px rgba(16,18,29,.06),0 8px 24px rgba(16,18,29,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer;border:none}
+  input,textarea,select{font-family:inherit}
+  [data-tip]{cursor:help}
+
+  .tooltip{position:fixed;z-index:200;max-width:262px;background:#16181d;color:#fff;
+    font-size:11.5px;line-height:1.5;padding:10px 12px;border-radius:10px;
+    box-shadow:0 12px 34px rgba(0,0,0,.32);opacity:0;pointer-events:none;transition:opacity .12s ease}
+  .tooltip.show{opacity:1}
+
+  .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:40}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em}
+  .logo .dot{width:26px;height:26px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:#fff;font-size:14px}
+  .logo small{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:0}
+
+  .hero{padding:34px 0 8px}
+  .hero h1{font-size:30px;letter-spacing:-.03em;margin-bottom:8px}
+  .hero p{color:var(--muted);max-width:660px;font-size:15px}
+
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:22px 0 6px}
+  .search{flex:1;min-width:220px;position:relative}
+  .search input{width:100%;padding:11px 14px 11px 38px;border:1px solid var(--border);border-radius:10px;
+    background:var(--card);font-size:14px;outline:none}
+  .search input:focus{border-color:var(--accent)}
+  .search::before{content:"🔍";position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.6}
+  .count-note{color:var(--muted);font-size:13px}
+
+  .brand-rows{display:flex;flex-direction:column;gap:16px;padding:18px 0 90px}
+  .brand-row{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:18px 20px;cursor:pointer;transition:box-shadow .12s,border-color .12s}
+  .brand-row:hover{box-shadow:var(--shadow);border-color:#d3d6de}
+  .brand-row-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+  .brand-logo{border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:800;flex-shrink:0;overflow:hidden}
+  .brand-logo img{width:100%;height:100%;object-fit:contain;background:#fff}
+  .brand-row-head .brand-logo{width:42px;height:42px;font-size:15px}
+  .brand-name{font-weight:700;font-size:17px;letter-spacing:-.01em}
+  .brand-tag{color:var(--muted);font-size:12.5px}
+  .brand-row-head .spacer{flex:1}
+  .link-btn{display:inline-flex;align-items:center;gap:5px;background:var(--bg);
+    border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:12.5px;
+    font-weight:600;color:var(--text);cursor:pointer;text-decoration:none}
+  .link-btn:hover{background:#eef0f3}
+  .meta-pill{background:var(--bg);border-radius:999px;padding:5px 11px;font-size:12px;color:var(--muted)}
+  .brand-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  .brand-prod{display:flex;flex-direction:column;gap:7px}
+  .brand-prod .thumb{aspect-ratio:1;border-radius:11px;display:grid;place-items:center;font-size:30px;
+    overflow:hidden;background:#fff;border:1px solid var(--border)}
+  .brand-prod .thumb img{width:100%;height:100%;object-fit:contain}
+  .brand-prod .pname{font-size:11.5px;text-align:center;color:var(--muted);line-height:1.3;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .more-tile{border:1px dashed #c7caf2;border-radius:11px;display:grid;place-items:center;
+    aspect-ratio:1;font-weight:800;font-size:16px;color:var(--accent);background:var(--accent-soft);
+    text-align:center;line-height:1.25}
+  .brand-row:hover .more-tile{background:#e0e3fd}
+  .btn{padding:10px 14px;border-radius:10px;font-size:13.5px;font-weight:600;transition:.12s}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:#4338ca}
+  .btn-ghost{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+  .btn-ghost:hover{background:#eef0f3}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+  .prov-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-soft);color:var(--green);
+    font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px}
+  @media(max-width:760px){.brand-strip{grid-template-columns:repeat(3,1fr)}}
+
+  .state-msg{padding:50px 20px;text-align:center;color:var(--muted);font-size:14px}
+
+  .fab{position:fixed;right:22px;bottom:22px;z-index:45;background:var(--text);color:#fff;
+    border-radius:999px;padding:13px 20px;display:flex;align-items:center;gap:12px;
+    box-shadow:0 10px 30px rgba(16,18,29,.28);font-size:14px}
+  .fab:hover{transform:translateY(-2px)}
+  .fab .fab-margin{color:#4ade80;font-weight:800}
+  .fab .fab-sep{width:1px;height:18px;background:rgba(255,255,255,.25)}
+
+  .overlay{position:fixed;inset:0;background:rgba(16,18,29,.45);z-index:50;display:none;backdrop-filter:blur(2px)}
+  .overlay.open{display:block}
+
+  .modal{position:fixed;z-index:55;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(960px,94vw);max-height:90vh;background:var(--card);border-radius:18px;
+    display:none;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(16,18,29,.4)}
+  .modal.open{display:flex}
+  .modal-head{padding:22px 24px;border-bottom:1px solid var(--border)}
+  .modal-head-top{display:flex;align-items:flex-start;gap:14px}
+  .modal-head .brand-logo{width:54px;height:54px;font-size:20px}
+  .modal-title h2{font-size:20px;letter-spacing:-.02em}
+  .modal-title p{color:var(--muted);font-size:13px}
+  .x-close{margin-left:auto;background:var(--bg);width:34px;height:34px;border-radius:9px;
+    font-size:16px;color:var(--muted);flex-shrink:0}
+  .x-close:hover{background:#eef0f3}
+  .modal-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+  .meta-chip{background:var(--bg);border-radius:9px;padding:7px 12px;font-size:12.5px}
+  .meta-chip b{font-weight:700}
+  .modal-meta .btn{margin-left:auto}
+
+  .modal-toolbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;
+    gap:12px;flex-wrap:wrap;align-items:center;background:var(--card)}
+  .cats{display:flex;gap:6px;flex-wrap:wrap}
+  .cat-pill{background:var(--bg);border:1px solid var(--border);border-radius:999px;
+    padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--muted)}
+  .cat-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  .modal-body{padding:18px 24px 24px;overflow-y:auto}
+  .prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:14px}
+  .prod-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .prod-thumb{aspect-ratio:1;display:grid;place-items:center;font-size:40px;position:relative;background:#fff}
+  .prod-thumb img{width:100%;height:100%;object-fit:contain}
+  .prod-cat{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.92);font-size:10px;
+    font-weight:700;padding:3px 7px;border-radius:6px;color:var(--muted)}
+  .prod-info{padding:11px 12px;display:flex;flex-direction:column;gap:7px;flex:1}
+  .prod-name{font-size:13px;font-weight:600;line-height:1.35}
+  .prod-desc{font-size:11px;color:var(--muted);line-height:1.42;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .prod-price{display:flex;align-items:baseline;gap:6px;margin-top:auto}
+  .prod-price .uvp{font-size:16px;font-weight:800}
+  .prod-price .uvp-l{font-size:10.5px;color:var(--muted)}
+  .prod-margin{font-size:11.5px;color:var(--green);font-weight:700;background:var(--green-soft);
+    padding:3px 7px;border-radius:6px;align-self:flex-start}
+  .prod-btn{padding:8px;border-radius:8px;font-size:12.5px;font-weight:700;background:var(--accent-soft);color:var(--accent)}
+  .prod-btn:hover{background:#e0e3fd}
+  .prod-btn.in{background:var(--green-soft);color:var(--green)}
+  .no-results{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;font-size:14px}
+
+  .drawer{position:fixed;z-index:55;right:0;top:0;height:100vh;width:min(440px,100vw);
+    background:var(--card);transform:translateX(105%);transition:transform .25s ease;
+    display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(16,18,29,.25)}
+  .drawer.open{transform:translateX(0)}
+  .drawer-head{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+  .drawer-head h2{font-size:17px}
+  .drawer-head p{font-size:12px;color:var(--muted)}
+  .drawer-body{flex:1;overflow-y:auto;padding:16px 22px}
+  .bulk{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:10px;
+    padding:9px 12px;margin-bottom:14px;font-size:12.5px;color:var(--muted)}
+  .bulk input{width:54px;padding:5px 7px;border:1px solid var(--border);border-radius:7px;text-align:center;font-size:13px}
+  .bulk button{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:5px 10px;font-size:12px;font-weight:600}
+
+  .cart-line{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid var(--border)}
+  .cart-thumb{width:48px;height:48px;border-radius:9px;display:grid;place-items:center;font-size:22px;
+    flex-shrink:0;overflow:hidden;background:#fff;border:1px solid var(--border)}
+  .cart-thumb img{width:100%;height:100%;object-fit:contain}
+  .cart-line-main{flex:1;min-width:0}
+  .cart-line-name{font-size:13px;font-weight:600;line-height:1.3}
+  .cart-line-brand{font-size:11px;color:var(--muted)}
+  .cart-line-foot{display:flex;align-items:center;gap:8px;margin-top:7px}
+  .stepper{display:flex;align-items:center;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .stepper button{width:26px;height:26px;background:var(--bg);font-size:14px;color:var(--muted)}
+  .stepper button:hover{background:#eef0f3}
+  .stepper input{width:42px;height:26px;border:none;border-left:1px solid var(--border);
+    border-right:1px solid var(--border);text-align:center;font-size:12.5px;outline:none}
+  .stepper-l{font-size:11px;color:var(--muted)}
+  .cart-line-margin{margin-left:auto;text-align:right}
+  .cart-line-margin .m{font-size:13.5px;font-weight:800;color:var(--green)}
+  .cart-line-margin .ml{font-size:10px;color:var(--muted)}
+  .line-x{background:none;color:var(--muted);font-size:11px;text-decoration:underline;padding:2px 0}
+
+  .cart-empty{text-align:center;color:var(--muted);padding:60px 20px}
+  .cart-empty .big{font-size:40px;margin-bottom:10px}
+
+  .drawer-foot{border-top:1px solid var(--border);padding:18px 22px;background:var(--card)}
+  .calc-box{background:var(--green-soft);border-radius:12px;padding:15px;margin-bottom:12px}
+  .calc-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#1f3d33}
+  .calc-row.total{border-top:1px dashed rgba(5,150,105,.35);margin-top:6px;padding-top:9px}
+  .calc-row.total .big{font-size:22px;font-weight:800;color:var(--green)}
+  .calc-row span[data-tip]{border-bottom:1px dotted rgba(31,61,51,.4)}
+  .req-cta{width:100%;margin-bottom:10px}
+  .calc-hint{font-size:11px;color:var(--muted);line-height:1.4}
+
+  .popup{position:fixed;z-index:60;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(440px,92vw);background:var(--card);border-radius:16px;display:none;
+    flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(16,18,29,.45)}
+  .popup.open{display:flex}
+  .popup.wide{width:min(500px,94vw)}
+  .popup-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+  .popup-head h3{font-size:16px}
+  .popup-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px;max-height:66vh;overflow-y:auto}
+  .field label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px}
+  .field input,.field textarea,.field select{width:100%;padding:10px 12px;border:1px solid var(--border);
+    border-radius:9px;font-size:13.5px;outline:none;background:var(--card)}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+  .field textarea{resize:vertical;min-height:84px}
+  .cc-note{font-size:11.5px;color:var(--muted);background:var(--bg);padding:9px 11px;border-radius:8px;line-height:1.45}
+  .form-err{font-size:12px;color:#dc2626;font-weight:600}
+  .popup-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px}
+  .popup-foot .btn{flex:1}
+  .ok-state{padding:30px 24px;text-align:center}
+  .ok-state .big{font-size:40px;margin-bottom:8px}
+  .code-input{width:100%;text-align:center;letter-spacing:.4em;font-size:20px;font-weight:700;
+    padding:12px;border:1px solid var(--border);border-radius:10px;outline:none;margin:14px 0 4px}
+  .code-input:focus{border-color:var(--accent)}
+
+  .req-intro{font-size:12.5px;color:#1f3d33;background:var(--green-soft);padding:11px 12px;border-radius:9px;line-height:1.5}
+  .req-summary{display:flex;flex-direction:column;gap:10px}
+  .req-brand{border:1px solid var(--border);border-radius:11px;padding:11px 12px}
+  .req-brand-head{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+  .req-brand-head .brand-logo{width:30px;height:30px;font-size:12px}
+  .req-brand-name{font-weight:700;font-size:13.5px}
+  .req-prod{display:flex;justify-content:space-between;gap:12px;font-size:12px;
+    padding:4px 0;color:var(--muted);border-top:1px solid var(--border)}
+  .req-prod:first-of-type{border-top:none}
+  .req-prod .q{color:var(--text);font-weight:700;white-space:nowrap}
+
+  .verify-chip{display:inline-flex;align-items:center;gap:7px;border-radius:999px;
+    padding:7px 13px;font-size:12.5px;font-weight:600;border:1px solid var(--border);background:var(--card)}
+  .verify-chip.vc-verified{color:var(--green);border-color:#bfe6d6;background:var(--green-soft)}
+  .verify-chip .dot2{width:7px;height:7px;border-radius:50%;background:var(--green)}
+  .vstatus{font-size:11.5px;border-radius:8px;padding:9px 11px;margin-bottom:10px;line-height:1.45}
+  .vstatus.none{background:var(--bg);color:var(--muted)}
+  .vstatus.ok{background:var(--green-soft);color:var(--green);font-weight:600}
+  .form-section{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--border);padding-top:14px}
+  .form-section-title{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+    display:flex;align-items:center;gap:8px}
+  .form-section-title .num{width:18px;height:18px;border-radius:50%;background:var(--accent);
+    color:#fff;font-size:10px;display:grid;place-items:center;flex-shrink:0}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  @media(max-width:560px){.hero h1{font-size:24px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="logo">
+      <span class="dot">S</span>
+      <span>Spreat Brandpool</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="authArea" style="display:flex;align-items:center;gap:8px"></span>
+      <button class="btn btn-ghost" onclick="openCart()">🛒 Meine Sortiments-Anfrage</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>Brandpool für deinen Laden</h1>
+    <p>Stell dir dein Wunschsortiment aus geprüften E-Commerce-Marken zusammen. Trage ein,
+       wie oft du jedes Produkt pro Monat verkaufst — der Rechner zeigt dir live deine
+       Netto-Marge. Am Ende fragst du alle Marken mit einem Klick an.</p>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <input type="text" id="brandSearch" placeholder="Marke suchen …" oninput="renderBrands()">
+    </div>
+    <span class="count-note" id="brandCount"></span>
+  </div>
+
+  <div class="brand-rows" id="brandGrid">
+    <div class="state-msg">Lade Marken aus Supabase …</div>
+  </div>
+</div>
+
+<button class="fab" id="fab" onclick="openCart()">
+  🛒 <span id="fabCount">0 Produkte</span>
+  <span class="fab-sep"></span>
+  <span class="fab-margin" id="fabMargin">+0 €/Monat</span>
+</button>
+
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<!-- Brand modal -->
+<div class="modal" id="brandModal">
+  <div class="modal-head">
+    <div class="modal-head-top">
+      <div class="brand-logo" id="mLogo"></div>
+      <div class="modal-title">
+        <h2 id="mName"></h2>
+        <p id="mTag"></p>
+      </div>
+      <button class="x-close" onclick="closeAll()">✕</button>
+    </div>
+    <div class="modal-meta" id="mMeta"></div>
+  </div>
+  <div class="modal-toolbar">
+    <div class="search" style="min-width:180px">
+      <input type="text" id="prodSearch" placeholder="Produkt suchen …" oninput="renderProducts()">
+    </div>
+    <div class="cats" id="mCats"></div>
+  </div>
+  <div class="modal-body">
+    <div class="prod-grid" id="prodGrid"></div>
+  </div>
+</div>
+
+<!-- Cart drawer -->
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <h2>Meine Sortiments-Anfrage</h2>
+      <p>Marge kalkulieren & Marken direkt anfragen</p>
+    </div>
+    <button class="x-close" style="margin-left:auto" onclick="closeAll()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
+</div>
+
+<!-- Contact popup -->
+<div class="popup" id="contactPopup">
+  <div class="popup-head">
+    <h3 id="cpTitle">Marke kontaktieren</h3>
+    <button class="x-close" style="margin-left:auto" onclick="closeContact()">✕</button>
+  </div>
+  <div id="cpForm">
+    <div class="popup-body">
+      <div class="field"><label>Deine E-Mail-Adresse</label>
+        <input type="email" id="cpEmail" placeholder="laden@beispiel.de"></div>
+      <div class="field"><label>Deine Nachricht</label><textarea id="cpMsg"></textarea></div>
+      <div class="cc-note">📩 Spreat wird automatisch in Kopie gesetzt — wir begleiten den Kontakt.</div>
+    </div>
+    <div class="popup-foot">
+      <button class="btn btn-ghost" onclick="closeContact()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="sendContact()">Anfrage senden</button>
+    </div>
+  </div>
+  <div class="ok-state" id="cpOk" style="display:none">
+    <div class="big">✅</div><strong>Anfrage gesendet</strong>
+    <p style="color:var(--muted);font-size:13px;margin-top:6px">Die Marke meldet sich bei dir — Spreat ist in Kopie.</p>
+  </div>
+</div>
+
+<!-- Login popup (echter Supabase-Login) -->
+<div class="popup" id="loginPopup">
+  <div class="popup-head">
+    <h3>Anmelden</h3>
+    <button class="x-close" style="margin-left:auto" onclick="closeLogin()">✕</button>
+  </div>
+  <div id="lgForm">
+    <div class="popup-body">
+      <div class="req-intro">Melde dich mit deiner E-Mail-Adresse an — wir senden dir einen
+        6-stelligen Code, kein Passwort nötig.</div>
+      <div class="field"><label>E-Mail-Adresse</label>
+        <input type="email" id="lgEmail" placeholder="laden@beispiel.de"></div>
+      <div class="form-err" id="lgFormErr" style="display:none"></div>
+    </div>
+    <div class="popup-foot">
+      <button class="btn btn-ghost" onclick="closeLogin()">Abbrechen</button>
+      <button class="btn btn-primary" id="lgSendBtn" onclick="sendLoginCode()">Code senden</button>
+    </div>
+  </div>
+  <div id="lgVerify" style="display:none">
+    <div class="popup-body">
+      <div class="req-intro">Wir haben einen 6-stelligen Code an <b id="lgSentMail"></b>
+        geschickt. Gib ihn hier ein.</div>
+      <input class="code-input" id="lgCode" inputmode="numeric" maxlength="6" placeholder="······">
+      <div class="form-err" id="lgCodeErr" style="display:none"></div>
+    </div>
+    <div class="popup-foot">
+      <button class="btn btn-ghost" onclick="backToLoginEmail()">Zurück</button>
+      <button class="btn btn-primary" id="lgVerifyBtn" onclick="confirmLoginCode()">Anmelden</button>
+    </div>
+  </div>
+  <div class="ok-state" id="lgOk" style="display:none">
+    <div class="big">✅</div><strong>Angemeldet</strong>
+    <p style="color:var(--muted);font-size:13px;margin-top:6px" id="lgOkMail"></p>
+  </div>
+</div>
+
+<!-- Händler-Profil -->
+<div class="popup wide" id="profilePopup">
+  <div class="popup-head">
+    <h3>Dein Händler-Profil</h3>
+    <button class="x-close" style="margin-left:auto" onclick="closeProfile()">✕</button>
+  </div>
+  <div id="pfForm">
+    <div class="popup-body">
+      <div class="req-intro">Damit die Marken deine Anfrage ernst nehmen, legst du einmalig
+        dein Händler-Profil an.</div>
+      <div class="form-section">
+        <div class="form-section-title"><span class="num">1</span>Ansprechpartner</div>
+        <div class="field-row">
+          <div class="field"><label>Name</label><input type="text" id="pfName" placeholder="Vor- und Nachname"></div>
+          <div class="field"><label>Funktion</label><input type="text" id="pfRole" placeholder="z.B. Inhaber:in"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Telefon</label><input type="text" id="pfPhone" placeholder="+49 …"></div>
+          <div class="field"><label>E-Mail</label><input type="email" id="pfEmail" placeholder="laden@beispiel.de"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title"><span class="num">2</span>Geschäftsprofil & Standort</div>
+        <div class="field"><label>Branche / Sortimentsschwerpunkt</label>
+          <select id="pfBranch">
+            <option>Spielwaren</option><option>Drogerie & Kosmetik</option>
+            <option>Elektronik</option><option>Lebensmittel & Kiosk</option>
+            <option>Haushalt & Wohnen</option><option>Sport & Freizeit</option><option>Sonstiges</option>
+          </select></div>
+        <div class="field-row">
+          <div class="field"><label>Anzahl Filialen</label><input type="number" id="pfStores" placeholder="1"></div>
+          <div class="field"><label>Ø monatliches Handelsvolumen</label>
+            <select id="pfVolume">
+              <option>unter 5.000 €</option><option>5.000–20.000 €</option>
+              <option>20.000–50.000 €</option><option>50.000–100.000 €</option><option>über 100.000 €</option>
+            </select></div>
+        </div>
+        <div class="field"><label>Adresse des Ladenlokals</label>
+          <input type="text" id="pfAddr" placeholder="Straße, PLZ, Ort"></div>
+      </div>
+      <div class="cc-note">🔒 Demo-Hinweis: Das Profil wird in dieser Version noch nicht in der
+        Datenbank gespeichert — das ist der nächste Schritt.</div>
+    </div>
+    <div class="popup-foot">
+      <button class="btn btn-ghost" onclick="closeProfile()">Abbrechen</button>
+      <button class="btn btn-primary" onclick="submitProfile()">Profil speichern & Anfrage öffnen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sammel-Anfrage -->
+<div class="popup wide" id="requestPopup">
+  <div class="popup-head">
+    <h3>Marken anfragen</h3>
+    <button class="x-close" style="margin-left:auto" onclick="closeRequest()">✕</button>
+  </div>
+  <div id="reqForm">
+    <div class="popup-body">
+      <div id="reqVerifyBanner"></div>
+      <div class="req-intro" id="reqIntro"></div>
+      <div class="req-summary" id="reqSummary"></div>
+      <div class="field"><label>Nachricht an das Spreat-Team (optional)</label>
+        <textarea id="reqMsg" placeholder="z.B. besondere Wünsche, Liefertermine, Fragen …"></textarea></div>
+      <div class="cc-note">📩 Deine Anfrage geht zuerst an das Spreat-Team zur Prüfung und wird dann
+        an die Marken weitergeleitet.</div>
+    </div>
+    <div class="popup-foot">
+      <button class="btn btn-ghost" onclick="closeRequest()">Abbrechen</button>
+      <button class="btn btn-primary" id="reqSubmitBtn" onclick="sendRequest()">Anfrage senden</button>
+    </div>
+  </div>
+  <div class="ok-state" id="reqOk" style="display:none">
+    <div class="big">✅</div><strong id="reqOkTitle">Anfrage übermittelt</strong>
+    <p style="color:var(--muted);font-size:13px;margin-top:6px">Das Spreat-Team prüft deine Anfrage
+      und leitet sie an die Marken weiter.</p>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SUPABASE — Datenquelle & Login
+   ============================================================ */
+const SUPABASE_URL = 'https://lzgrcnkatchkrvlrjnxa.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_L0JTr0QFuUMiS5S5JPCPig_auZT1zZF';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let _brands = null, _products = null;
+
+const dataProvider = {
+  async load(){
+    const [{data:bd,error:be},{data:pd,error:pe}] = await Promise.all([
+      sb.from('brands').select('*').eq('sichtbar', true).order('position'),
+      sb.from('products').select('*').eq('sichtbar', true).order('produkt_id'),
+    ]);
+    if(be) throw be;
+    if(pe) throw pe;
+    _brands = bd || [];
+    _products = (pd || []).map(p => ({...p, uvp_preis: Number(p.uvp_preis)||0,
+      provision_prozent: Number(p.provision_prozent)||0}));
+  },
+  getBrands(){
+    return _brands.map(b => {
+      const ps = _products.filter(p => p.marken_id === b.marken_id);
+      const avg = ps.length ? Math.round(ps.reduce((s,p)=>s+p.uvp_preis,0)/ps.length) : 0;
+      return {...b, productCount: ps.length, avgCart: avg, color: colorFor(b.marken_id)};
+    });
+  },
+  getProducts(id){ return _products.filter(p => p.marken_id === id); },
+};
+
+/* ============================================================
+   Helpers
+   ============================================================ */
+const PALETTE = ['#1c64f2','#0ea5b7','#1f7a3d','#e26a1f','#ff6b35','#d6336c','#7c3aed','#0891b2'];
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
+function colorFor(id){ return PALETTE[hash(id) % PALETTE.length]; }
+const eur = n => Math.round(Number(n)||0).toLocaleString('de-DE') + ' €';
+const initials = n => (n||'?').replace(/[^A-Za-zÄÖÜ ]/g,'').trim().split(' ')
+  .map(w=>w[0]).slice(0,2).join('').toUpperCase() || '?';
+const esc = s => String(s==null?'':s).replace(/"/g,'&quot;');
+const escTxt = s => String(s==null?'':s).replace(/</g,'&lt;');
+const gv = id => (document.getElementById(id).value||'').trim();
+const marginOf = p => p.uvp_preis * p.provision_prozent / 100;
+function provLabel(b){ return b.provision_min===b.provision_max
+  ? b.provision_min+' %' : b.provision_min+'–'+b.provision_max+' %'; }
+
+const TIP = {
+  prov:'Provision = dein Anteil am Verkaufspreis. Bei einem Verkauf behältst du diesen Anteil des Preises als Marge — den Rest erhält die Marke.',
+  count:'Anzahl der Produkte dieser Marke, die du in deine Sortiments-Anfrage aufnehmen kannst.',
+  avg:'Durchschnittlicher Verkaufspreis (UVP) über alle Produkte dieser Marke — grobe Orientierung pro Verkauf.',
+  uvp:'UVP = unverbindliche Preisempfehlung. Zu diesem Preis verkaufst du das Produkt an deine Endkunden.',
+  units:'Summe aller Stückzahlen, die du pro Monat über alle Produkte verkaufen möchtest.',
+  revenue:'Gesamter Verkaufswert pro Monat zu UVP — der Umsatz, bevor die Marke ihren Anteil erhält.',
+  avgprov:'Gewichteter Durchschnitt der Provisionssätze aller Produkte in deiner Anfrage.',
+  netmargin:'Dein Verdienst pro Monat: Umsatz × Provision. Dieser Betrag bleibt bei dir.',
+};
+
+let cart = {};
+let activeBrand = null;
+let activeCat = 'Alle';
+let reqGroupCount = 0;
+let pendingLoginEmail = '';
+let session = {loggedIn:false, email:null, profile:null};
+
+/* ============================================================
+   Brand rows
+   ============================================================ */
+function brandLogoHtml(b, cls){
+  if(b.logo_url) return `<div class="brand-logo ${cls||''}"><img src="${esc(b.logo_url)}" alt=""></div>`;
+  return `<div class="brand-logo ${cls||''}" style="background:${b.color}">${initials(b.name)}</div>`;
+}
+function prodImg(p){
+  if(p.bild_url) return `<img src="${esc(p.bild_url)}" loading="lazy" alt=""
+    onerror="this.style.display='none'">`;
+  return '📦';
+}
+function renderBrands(){
+  if(!_brands){ return; }
+  const q = (document.getElementById('brandSearch').value||'').toLowerCase();
+  const brands = dataProvider.getBrands().filter(b => b.name.toLowerCase().includes(q));
+  const grid = document.getElementById('brandGrid');
+  document.getElementById('brandCount').textContent =
+    `${brands.length} Marken · ${_products.length} Produkte`;
+  if(!brands.length){ grid.innerHTML='<div class="state-msg">Keine Marken gefunden.</div>'; return; }
+  grid.innerHTML = brands.map(b => {
+    const prods = dataProvider.getProducts(b.marken_id);
+    let preview = prods.filter(p => p.featured).slice(0,5);
+    if(preview.length < 5) preview = prods.slice(0,5);
+    const rest = prods.length - preview.length;
+    const cells = preview.map(p => `
+      <div class="brand-prod">
+        <div class="thumb">${prodImg(p)}</div>
+        <div class="pname">${escTxt(p.produktname)}</div>
+      </div>`).join('') +
+      (rest > 0 ? `<div class="more-tile">${rest}+<br>mehr</div>` : '');
+    return `<div class="brand-row" onclick="openBrand('${b.marken_id}')">
+      <div class="brand-row-head">
+        ${brandLogoHtml(b)}
+        <div>
+          <div class="brand-name">${escTxt(b.name)}</div>
+          <div class="brand-tag">${escTxt(b.kurzbeschreibung)}</div>
+        </div>
+        <span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} Provision</span>
+        <span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
+        <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>
+        <span class="spacer"></span>
+        ${b.website ? `<a class="link-btn" href="${esc(b.website)}" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()">Website ➜</a>` : ''}
+        <button class="link-btn" onclick="event.stopPropagation();openContact('${b.marken_id}')">✉︎ Kontakt</button>
+      </div>
+      <div class="brand-strip">${cells}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   Brand modal
+   ============================================================ */
+function openBrand(id){
+  activeBrand = dataProvider.getBrands().find(b => b.marken_id === id);
+  activeCat = 'Alle';
+  document.getElementById('prodSearch').value = '';
+  document.getElementById('mLogo').outerHTML =
+    brandLogoHtml(activeBrand).replace('class="brand-logo "','class="brand-logo" id="mLogo"');
+  document.getElementById('mName').textContent = activeBrand.name;
+  document.getElementById('mTag').textContent = activeBrand.kurzbeschreibung || '';
+  document.getElementById('mMeta').innerHTML = `
+    <span class="meta-chip" data-tip="${esc(TIP.prov)}">Provision <b>${provLabel(activeBrand)}</b></span>
+    <span class="meta-chip" data-tip="${esc(TIP.avg)}">Ø Warenkorb <b>${eur(activeBrand.avgCart)}</b></span>
+    <span class="meta-chip" data-tip="${esc(TIP.count)}">${activeBrand.productCount} Produkte</span>
+    <button class="btn btn-ghost" onclick="openContact('${activeBrand.marken_id}')">✉︎ Marke kontaktieren</button>`;
+  const cats = ['Alle', ...new Set(dataProvider.getProducts(id).map(p=>p.kategorie).filter(Boolean))];
+  document.getElementById('mCats').innerHTML = cats.map((c,i) =>
+    `<button class="cat-pill ${i===0?'active':''}" onclick="setCat(this,${JSON.stringify(c).replace(/"/g,'&quot;')})">${escTxt(c)}</button>`).join('');
+  renderProducts();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('brandModal').classList.add('open');
+}
+function setCat(el, c){
+  activeCat = c;
+  [...document.querySelectorAll('#mCats .cat-pill')].forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderProducts();
+}
+function renderProducts(){
+  const q = (document.getElementById('prodSearch').value||'').toLowerCase();
+  let ps = dataProvider.getProducts(activeBrand.marken_id);
+  if(activeCat !== 'Alle') ps = ps.filter(p => p.kategorie === activeCat);
+  if(q) ps = ps.filter(p => (p.produktname||'').toLowerCase().includes(q));
+  const grid = document.getElementById('prodGrid');
+  if(!ps.length){ grid.innerHTML = '<div class="no-results">Keine Produkte gefunden.</div>'; return; }
+  grid.innerHTML = ps.map(p => {
+    const inCart = !!cart[p.produkt_id];
+    const marge = marginOf(p);
+    const tip = `Pro verkauftem Stück verdienst du ${eur(marge)} — das sind ${p.provision_prozent} % vom UVP (${eur(p.uvp_preis)}).`;
+    return `<div class="prod-card">
+      <div class="prod-thumb">
+        ${prodImg(p)}
+        ${p.kategorie ? `<span class="prod-cat">${escTxt(p.kategorie)}</span>` : ''}
+      </div>
+      <div class="prod-info">
+        <div class="prod-name">${escTxt(p.produktname)}</div>
+        ${p.beschreibung ? `<div class="prod-desc">${escTxt(p.beschreibung)}</div>` : ''}
+        <div class="prod-price">
+          <span class="uvp" data-tip="${esc(TIP.uvp)}">${eur(p.uvp_preis)}</span>
+          <span class="uvp-l">UVP</span>
+        </div>
+        <span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % · +${eur(marge)} Marge</span>
+        <button class="prod-btn ${inCart?'in':''}" onclick="toggleCart('${p.produkt_id}')">
+          ${inCart?'✓ In Anfrage':'+ Zur Anfrage'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   Cart
+   ============================================================ */
+function findProduct(id){ return _products.find(p => p.produkt_id === id); }
+function toggleCart(id){
+  if(cart[id]) delete cart[id];
+  else {
+    const p = findProduct(id);
+    const brand = dataProvider.getBrands().find(b => b.marken_id === p.marken_id);
+    cart[id] = {product:p, brand, qty:10};
+  }
+  if(activeBrand) renderProducts();
+  updateFab(); renderCart();
+}
+function setQty(id,v){ v=Math.max(0,parseInt(v)||0); if(cart[id])cart[id].qty=v; updateFab(); renderCart(); }
+function stepQty(id,d){ if(cart[id]) setQty(id, cart[id].qty+d); }
+function setAllQty(){
+  const v = Math.max(0, parseInt(document.getElementById('bulkQty').value)||0);
+  Object.values(cart).forEach(c => c.qty = v);
+  renderCart(); updateFab();
+}
+function cartTotals(){
+  let units=0, revenue=0, margin=0;
+  Object.values(cart).forEach(c => {
+    units += c.qty;
+    revenue += c.product.uvp_preis * c.qty;
+    margin += marginOf(c.product) * c.qty;
+  });
+  return {count:Object.keys(cart).length, units, revenue, margin};
+}
+function updateFab(){
+  const t = cartTotals();
+  document.getElementById('fabCount').textContent = t.count + ' ' + (t.count===1?'Produkt':'Produkte');
+  document.getElementById('fabMargin').textContent = '+' + eur(t.margin) + '/Monat';
+}
+function profileStatusLine(){
+  if(session.profile)
+    return `<div class="vstatus ok">✓ Registriert${session.email?' als '+escTxt(session.email):''} — deine Anfrage geht direkt zur Spreat-Prüfung.</div>`;
+  return `<div class="vstatus none">ℹ︎ Beim Anfragen legst du einmalig dein Händler-Profil an.</div>`;
+}
+function cartThumb(p,brand){
+  return p.bild_url
+    ? `<img src="${esc(p.bild_url)}" alt="" onerror="this.style.display='none'">`
+    : '📦';
+}
+function renderCart(){
+  const body = document.getElementById('drawerBody');
+  const foot = document.getElementById('drawerFoot');
+  const items = Object.values(cart);
+  if(!items.length){
+    body.innerHTML = `<div class="cart-empty"><div class="big">🛒</div>
+      <strong>Noch nichts ausgewählt</strong>
+      <p style="font-size:13px;margin-top:6px">Öffne eine Marke und füge Produkte hinzu —
+      hier kalkulierst du deine Marge und fragst die Marken anschließend an.</p></div>`;
+    foot.innerHTML = ''; return;
+  }
+  body.innerHTML = `
+    <div class="bulk">
+      <span>Verkäufe / Monat für alle:</span>
+      <input type="number" id="bulkQty" value="10" min="0">
+      <button onclick="setAllQty()">übernehmen</button>
+    </div>` +
+    items.map(c => {
+      const lineMargin = marginOf(c.product) * c.qty;
+      return `<div class="cart-line">
+        <div class="cart-thumb">${cartThumb(c.product,c.brand)}</div>
+        <div class="cart-line-main">
+          <div class="cart-line-name">${escTxt(c.product.produktname)}</div>
+          <div class="cart-line-brand">${escTxt(c.brand.name)} · ${eur(c.product.uvp_preis)} UVP · ${c.product.provision_prozent} %</div>
+          <div class="cart-line-foot">
+            <div class="stepper">
+              <button onclick="stepQty('${c.product.produkt_id}',-1)">−</button>
+              <input type="number" value="${c.qty}" min="0" onchange="setQty('${c.product.produkt_id}',this.value)">
+              <button onclick="stepQty('${c.product.produkt_id}',1)">+</button>
+            </div>
+            <span class="stepper-l">/ Monat</span>
+            <button class="line-x" onclick="toggleCart('${c.product.produkt_id}')">entfernen</button>
+          </div>
+        </div>
+        <div class="cart-line-margin">
+          <div class="m">+${eur(lineMargin)}</div><div class="ml">/ Monat</div>
+        </div>
+      </div>`;
+    }).join('');
+  const t = cartTotals();
+  const brandCount = new Set(items.map(c => c.brand.marken_id)).size;
+  const effProv = t.revenue>0 ? Math.round(t.margin/t.revenue*100) : 0;
+  foot.innerHTML = `
+    <div class="calc-box">
+      <div class="calc-row"><span data-tip="${esc(TIP.units)}">Verkäufe / Monat</span><span>${t.units} Stück</span></div>
+      <div class="calc-row"><span data-tip="${esc(TIP.revenue)}">Umsatz / Monat (UVP)</span><span>${eur(t.revenue)}</span></div>
+      <div class="calc-row"><span data-tip="${esc(TIP.avgprov)}">Ø Provision</span><span>${effProv} %</span></div>
+      <div class="calc-row total"><span data-tip="${esc(TIP.netmargin)}">Deine Netto-Marge / Monat</span>
+        <span class="big">${eur(t.margin)}</span></div>
+      <div class="calc-row"><span>Hochgerechnet / Jahr</span><span><b>${eur(t.margin*12)}</b></span></div>
+    </div>
+    ${profileStatusLine()}
+    <button class="btn btn-primary req-cta" onclick="requestFlow()">
+      ✉︎ ${brandCount} ${brandCount===1?'Marke':'Marken'} anfragen</button>
+    <div class="calc-hint">Provision je Produkt aus der Datenbank. Netto-Marge = Umsatz × Provision.</div>`;
+}
+
+/* ============================================================
+   Anfrage-Flow (Demo: noch kein DB-Schreiben)
+   ============================================================ */
+function requestFlow(){ if(session.profile) openRequest(); else openProfile(); }
+function openRequest(){
+  const items = Object.values(cart);
+  if(!items.length) return;
+  const byBrand = {};
+  items.forEach(c => {
+    if(!byBrand[c.brand.marken_id]) byBrand[c.brand.marken_id] = {brand:c.brand, list:[]};
+    byBrand[c.brand.marken_id].list.push(c);
+  });
+  const groups = Object.values(byBrand);
+  reqGroupCount = groups.length;
+  const p = session.profile || {};
+  document.getElementById('reqVerifyBanner').innerHTML =
+    `<div class="vstatus ok">✓ Registrierter Händler${p.name?' · '+escTxt(p.name):''}${p.addr?' · '+escTxt(p.addr):''}
+     <div style="font-weight:400;margin-top:2px">Dein Händler-Profil wird der Anfrage beigelegt.</div></div>`;
+  document.getElementById('reqIntro').textContent =
+    `Du fragst ${groups.length} ${groups.length===1?'Marke':'Marken'} zu insgesamt `+
+    `${items.length} Produkten an. Deine Anfrage geht zuerst an das Spreat-Team zur Prüfung.`;
+  document.getElementById('reqSummary').innerHTML = groups.map(g => `
+    <div class="req-brand">
+      <div class="req-brand-head">${brandLogoHtml(g.brand)}<div class="req-brand-name">${escTxt(g.brand.name)}</div></div>
+      ${g.list.map(c => `<div class="req-prod">
+        <span>${escTxt(c.product.produktname)}</span>
+        <span class="q">ca. ${c.qty} Stk / Monat</span></div>`).join('')}
+    </div>`).join('');
+  document.getElementById('reqMsg').value = '';
+  document.getElementById('reqSubmitBtn').textContent =
+    `${groups.length} ${groups.length===1?'Marke':'Marken'} anfragen`;
+  document.getElementById('reqForm').style.display = '';
+  document.getElementById('reqOk').style.display = 'none';
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('requestPopup').classList.add('open');
+}
+function sendRequest(){
+  document.getElementById('reqForm').style.display = 'none';
+  document.getElementById('reqOkTitle').textContent =
+    `Anfrage an ${reqGroupCount} ${reqGroupCount===1?'Marke':'Marken'} übermittelt`;
+  document.getElementById('reqOk').style.display = '';
+}
+function closeRequest(){
+  document.getElementById('requestPopup').classList.remove('open');
+  if(!document.getElementById('drawer').classList.contains('open'))
+    document.getElementById('overlay').classList.remove('open');
+}
+
+/* ---- Händler-Profil (Demo) ---- */
+function openProfile(){
+  document.getElementById('pfForm').style.display = '';
+  if(session.email) document.getElementById('pfEmail').value = session.email;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('profilePopup').classList.add('open');
+}
+function submitProfile(){
+  session.profile = {
+    name:gv('pfName'), role:gv('pfRole'), phone:gv('pfPhone'), email:gv('pfEmail'),
+    branch:gv('pfBranch'), stores:gv('pfStores'), volume:gv('pfVolume'), addr:gv('pfAddr')
+  };
+  renderCart();
+  document.getElementById('profilePopup').classList.remove('open');
+  openRequest();
+}
+function closeProfile(){
+  document.getElementById('profilePopup').classList.remove('open');
+  if(!document.getElementById('drawer').classList.contains('open'))
+    document.getElementById('overlay').classList.remove('open');
+}
+
+/* ============================================================
+   Login — echter Supabase Auth (E-Mail-Code)
+   ============================================================ */
+function renderAuth(){
+  const a = document.getElementById('authArea');
+  if(session.loggedIn){
+    a.innerHTML = `<span class="verify-chip vc-verified"><span class="dot2"></span>${escTxt(session.email)}</span>
+      <button class="link-btn" onclick="logout()">Abmelden</button>`;
+  } else {
+    a.innerHTML = `<button class="link-btn" onclick="openLogin()">Anmelden</button>`;
+  }
+}
+function openLogin(){
+  document.getElementById('lgForm').style.display = '';
+  document.getElementById('lgVerify').style.display = 'none';
+  document.getElementById('lgOk').style.display = 'none';
+  document.getElementById('lgEmail').value = '';
+  document.getElementById('lgCode').value = '';
+  document.getElementById('lgFormErr').style.display = 'none';
+  document.getElementById('lgCodeErr').style.display = 'none';
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('loginPopup').classList.add('open');
+}
+async function sendLoginCode(){
+  const email = gv('lgEmail');
+  const err = document.getElementById('lgFormErr');
+  if(!email){ err.textContent='Bitte E-Mail-Adresse eingeben.'; err.style.display=''; return; }
+  const btn = document.getElementById('lgSendBtn');
+  btn.disabled = true; btn.textContent = 'Sende …'; err.style.display='none';
+  const {error} = await sb.auth.signInWithOtp({email});
+  btn.disabled = false; btn.textContent = 'Code senden';
+  if(error){ err.textContent = 'Fehler: ' + error.message; err.style.display=''; return; }
+  pendingLoginEmail = email;
+  document.getElementById('lgSentMail').textContent = email;
+  document.getElementById('lgForm').style.display = 'none';
+  document.getElementById('lgVerify').style.display = '';
+  document.getElementById('lgCode').focus();
+}
+function backToLoginEmail(){
+  document.getElementById('lgVerify').style.display = 'none';
+  document.getElementById('lgForm').style.display = '';
+}
+async function confirmLoginCode(){
+  const code = gv('lgCode');
+  const err = document.getElementById('lgCodeErr');
+  if(!code){ err.textContent='Bitte Code eingeben.'; err.style.display=''; return; }
+  const btn = document.getElementById('lgVerifyBtn');
+  btn.disabled = true; btn.textContent = 'Prüfe …'; err.style.display='none';
+  const {data,error} = await sb.auth.verifyOtp({email:pendingLoginEmail, token:code, type:'email'});
+  btn.disabled = false; btn.textContent = 'Anmelden';
+  if(error){ err.textContent = 'Code ungültig oder abgelaufen.'; err.style.display=''; return; }
+  session.loggedIn = true;
+  session.email = data.user.email;
+  await loadProfile(data.user.id);
+  renderAuth(); renderCart();
+  document.getElementById('lgVerify').style.display = 'none';
+  document.getElementById('lgOkMail').textContent = 'Angemeldet als ' + session.email;
+  document.getElementById('lgOk').style.display = '';
+}
+async function logout(){
+  await sb.auth.signOut();
+  session = {loggedIn:false, email:null, profile:null};
+  renderAuth(); renderCart();
+}
+function closeLogin(){
+  document.getElementById('loginPopup').classList.remove('open');
+  if(!document.getElementById('drawer').classList.contains('open'))
+    document.getElementById('overlay').classList.remove('open');
+}
+async function loadProfile(userId){
+  const {data} = await sb.from('retailers').select('*').eq('id', userId).maybeSingle();
+  if(data){
+    session.profile = {
+      name:data.ansprechpartner_name, role:data.ansprechpartner_funktion,
+      phone:data.telefon, email:data.email, branch:data.branche,
+      stores:data.anzahl_filialen, volume:data.handelsvolumen, addr:data.adresse
+    };
+  }
+}
+async function restoreSession(){
+  const {data} = await sb.auth.getSession();
+  if(data && data.session){
+    session.loggedIn = true;
+    session.email = data.session.user.email;
+    await loadProfile(data.session.user.id);
+  }
+  renderAuth();
+}
+
+/* ---- Kontakt einzelne Marke ---- */
+function openContact(id){
+  const b = dataProvider.getBrands().find(x => x.marken_id === id);
+  document.getElementById('cpTitle').textContent = b.name + ' kontaktieren';
+  document.getElementById('cpEmail').value = session.email || '';
+  document.getElementById('cpMsg').value =
+    `Hallo ${b.name}-Team,\n\nwir betreiben einen Einzelhandel und möchten Ihre Produkte `+
+    `über Spreat in unserem Laden anbieten. Können wir dazu ins Gespräch kommen?\n\nViele Grüße`;
+  document.getElementById('cpForm').style.display = '';
+  document.getElementById('cpOk').style.display = 'none';
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('contactPopup').classList.add('open');
+}
+function sendContact(){
+  document.getElementById('cpForm').style.display = 'none';
+  document.getElementById('cpOk').style.display = '';
+}
+function closeContact(){
+  document.getElementById('contactPopup').classList.remove('open');
+  if(!document.getElementById('brandModal').classList.contains('open') &&
+     !document.getElementById('drawer').classList.contains('open'))
+    document.getElementById('overlay').classList.remove('open');
+}
+
+/* ---- Open/close ---- */
+function openCart(){
+  renderCart();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('drawer').classList.add('open');
+}
+function closeAll(){
+  ['overlay','brandModal','drawer','contactPopup','requestPopup','profilePopup','loginPopup']
+    .forEach(id => document.getElementById(id).classList.remove('open'));
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeAll(); });
+
+/* ---- Tooltip-Engine ---- */
+const tipEl = document.createElement('div');
+tipEl.className = 'tooltip';
+document.body.appendChild(tipEl);
+let curTip = null;
+function showTip(el){
+  tipEl.textContent = el.getAttribute('data-tip');
+  tipEl.classList.add('show');
+  const r = el.getBoundingClientRect();
+  const tr = tipEl.getBoundingClientRect();
+  let left = r.left + r.width/2 - tr.width/2;
+  left = Math.max(8, Math.min(left, window.innerWidth - tr.width - 8));
+  let top = r.top - tr.height - 9;
+  if(top < 8) top = r.bottom + 9;
+  tipEl.style.left = left + 'px';
+  tipEl.style.top = top + 'px';
+}
+document.addEventListener('mouseover', e => {
+  const t = e.target.closest('[data-tip]');
+  if(t === curTip) return;
+  curTip = t;
+  if(t) showTip(t); else tipEl.classList.remove('show');
+});
+document.addEventListener('mousedown', () => tipEl.classList.remove('show'));
+
+/* ---- Init ---- */
+async function init(){
+  renderAuth();
+  try {
+    await dataProvider.load();
+    renderBrands();
+  } catch(e){
+    document.getElementById('brandGrid').innerHTML =
+      '<div class="state-msg">Daten konnten nicht geladen werden: ' + escTxt(e.message||e) + '</div>';
+  }
+  updateFab();
+  try { await restoreSession(); } catch(e){ /* nicht angemeldet */ }
+}
+init();
+</script>
+</body>
+</html>
