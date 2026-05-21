@@ -451,6 +451,7 @@
         <textarea id="reqMsg" placeholder="z.B. besondere Wünsche, Liefertermine, Fragen …"></textarea></div>
       <div class="cc-note">📩 Deine Anfrage geht zuerst an das Spreat-Team zur Prüfung und wird dann
         an die Marken weitergeleitet.</div>
+      <div class="form-err" id="reqErr" style="display:none"></div>
     </div>
     <div class="popup-foot">
       <button class="btn btn-ghost" onclick="closeRequest()">Abbrechen</button>
@@ -783,7 +784,24 @@ function openRequest(){
   document.getElementById('overlay').classList.add('open');
   document.getElementById('requestPopup').classList.add('open');
 }
-function sendRequest(){
+async function sendRequest(){
+  const items = Object.values(cart).map(c => ({produkt_id: c.product.produkt_id, menge: c.qty}));
+  if(!items.length) return;
+  const btn = document.getElementById('reqSubmitBtn');
+  const err = document.getElementById('reqErr');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Wird gesendet …';
+  err.style.display = 'none';
+  const {error} = await sb.rpc('submit_request', {
+    p_items: items,
+    p_nachricht: document.getElementById('reqMsg').value || null
+  });
+  btn.disabled = false; btn.textContent = orig;
+  if(error){
+    err.textContent = 'Anfrage konnte nicht gesendet werden: ' + error.message;
+    err.style.display = '';
+    return;
+  }
   document.getElementById('reqForm').style.display = 'none';
   document.getElementById('reqOkTitle').textContent =
     `Anfrage an ${reqGroupCount} ${reqGroupCount===1?'Marke':'Marken'} übermittelt`;
@@ -841,10 +859,7 @@ async function saveProfile(){
   if(error){ console.error('saveProfile', error); return false; }
   session.profile = {name:p.name, role:p.role, phone:p.phone, email:p.email,
     branch:p.branch, stores:p.stores, volume:p.volume, addr:p.addr};
-  // Spreat automatisch benachrichtigen — Fehler blockieren die Registrierung NICHT
-  try {
-    await sb.functions.invoke('notify-registration', {body: p});
-  } catch(e){ console.warn('notify-registration fehlgeschlagen:', e); }
+  // Die Spreat-Benachrichtigung läuft serverseitig über einen DB-Trigger auf der retailers-Tabelle.
   return true;
 }
 async function submitProfile(){
