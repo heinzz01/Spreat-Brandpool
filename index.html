@@ -886,7 +886,7 @@ async function confirmProfileCode(){
   if(!code){ err.textContent = 'Bitte Code eingeben.'; err.style.display=''; return; }
   const btn = document.getElementById('pfVerifyBtn');
   btn.disabled = true; btn.textContent = 'Prüfe …'; err.style.display='none';
-  const {data,error} = await sb.auth.verifyOtp({email:pendingProfile.email, token:code, type:'email'});
+  const {data,error} = await verifyEmailCode(pendingProfile.email, code);
   if(error){ btn.disabled=false; btn.textContent='Bestätigen & anmelden';
     err.textContent='Code ungültig oder abgelaufen.'; err.style.display=''; return; }
   session.loggedIn = true;
@@ -907,6 +907,13 @@ function closeProfile(){
 /* ============================================================
    Login — echter Supabase Auth (E-Mail-Code)
    ============================================================ */
+async function verifyEmailCode(email, code){
+  // Neuer Nutzer -> Token-Typ 'signup', bestehender -> 'email'. Beides probieren.
+  const r1 = await sb.auth.verifyOtp({email, token:code, type:'email'});
+  if(!r1.error) return r1;
+  const r2 = await sb.auth.verifyOtp({email, token:code, type:'signup'});
+  return r2.error ? r1 : r2;
+}
 function renderAuth(){
   const a = document.getElementById('authArea');
   if(session.loggedIn){
@@ -953,7 +960,7 @@ async function confirmLoginCode(){
   if(!code){ err.textContent='Bitte Code eingeben.'; err.style.display=''; return; }
   const btn = document.getElementById('lgVerifyBtn');
   btn.disabled = true; btn.textContent = 'Prüfe …'; err.style.display='none';
-  const {data,error} = await sb.auth.verifyOtp({email:pendingLoginEmail, token:code, type:'email'});
+  const {data,error} = await verifyEmailCode(pendingLoginEmail, code);
   btn.disabled = false; btn.textContent = 'Anmelden';
   if(error){ err.textContent = 'Code ungültig oder abgelaufen.'; err.style.display=''; return; }
   session.loggedIn = true;
