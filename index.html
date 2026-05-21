@@ -323,7 +323,8 @@
       <div class="field"><label>Deine E-Mail-Adresse</label>
         <input type="email" id="cpEmail" placeholder="laden@beispiel.de"></div>
       <div class="field"><label>Deine Nachricht</label><textarea id="cpMsg"></textarea></div>
-      <div class="cc-note">📩 Spreat wird automatisch in Kopie gesetzt — wir begleiten den Kontakt.</div>
+      <div class="cc-note">📩 Deine Anfrage geht an das Spreat-Team, das den Kontakt zur Marke herstellt.</div>
+      <div class="form-err" id="cpErr" style="display:none"></div>
     </div>
     <div class="popup-foot">
       <button class="btn btn-ghost" onclick="closeContact()">Abbrechen</button>
@@ -530,6 +531,7 @@ let activeCat = 'Alle';
 let reqGroupCount = 0;
 let pendingLoginEmail = '';
 let pendingProfile = null;
+let contactBrand = null;
 let session = {loggedIn:false, email:null, profile:null};
 
 /* ============================================================
@@ -1019,17 +1021,35 @@ async function restoreSession(){
 /* ---- Kontakt einzelne Marke ---- */
 function openContact(id){
   const b = dataProvider.getBrands().find(x => x.marken_id === id);
+  contactBrand = b;
   document.getElementById('cpTitle').textContent = b.name + ' kontaktieren';
   document.getElementById('cpEmail').value = session.email || '';
   document.getElementById('cpMsg').value =
     `Hallo ${b.name}-Team,\n\nwir betreiben einen Einzelhandel und möchten Ihre Produkte `+
     `über Spreat in unserem Laden anbieten. Können wir dazu ins Gespräch kommen?\n\nViele Grüße`;
+  document.getElementById('cpErr').style.display = 'none';
   document.getElementById('cpForm').style.display = '';
   document.getElementById('cpOk').style.display = 'none';
   document.getElementById('overlay').classList.add('open');
   document.getElementById('contactPopup').classList.add('open');
 }
-function sendContact(){
+async function sendContact(){
+  const email = gv('cpEmail');
+  const msg = gv('cpMsg');
+  const err = document.getElementById('cpErr');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    err.textContent = 'Bitte eine gültige E-Mail-Adresse eingeben.'; err.style.display = ''; return;
+  }
+  if(!msg){ err.textContent = 'Bitte eine Nachricht eingeben.'; err.style.display = ''; return; }
+  err.style.display = 'none';
+  const {error} = await sb.rpc('send_contact', {
+    p_marken_id: contactBrand ? contactBrand.marken_id : null,
+    p_email: email,
+    p_nachricht: msg
+  });
+  if(error){
+    err.textContent = 'Konnte nicht gesendet werden: ' + error.message; err.style.display = ''; return;
+  }
   document.getElementById('cpForm').style.display = 'none';
   document.getElementById('cpOk').style.display = '';
 }
