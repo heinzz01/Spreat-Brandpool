@@ -339,7 +339,7 @@
 <!-- Login popup (echter Supabase-Login) -->
 <div class="popup" id="loginPopup">
   <div class="popup-head">
-    <h3>Anmelden</h3>
+    <h3>Login</h3>
     <button class="x-close" style="margin-left:auto" onclick="closeLogin()">✕</button>
   </div>
   <div id="lgForm">
@@ -382,7 +382,7 @@
   <div id="pfForm">
     <div class="popup-body">
       <div class="req-intro">Damit die Marken deine Anfrage ernst nehmen, legst du einmalig
-        dein Händler-Profil an.</div>
+        dein Händler-Profil an. Deine E-Mail-Adresse ist zugleich dein Login.</div>
       <div class="form-section">
         <div class="form-section-title"><span class="num">1</span>Ansprechpartner</div>
         <div class="field-row">
@@ -413,12 +413,25 @@
         <div class="field"><label>Adresse des Ladenlokals</label>
           <input type="text" id="pfAddr" placeholder="Straße, PLZ, Ort"></div>
       </div>
-      <div class="cc-note">🔒 Demo-Hinweis: Das Profil wird in dieser Version noch nicht in der
-        Datenbank gespeichert — das ist der nächste Schritt.</div>
+      <div class="cc-note">🔒 Mit „Registrieren" senden wir einen 6-stelligen Code an deine
+        E-Mail. Nach der Bestätigung ist dein Profil in Spreat gespeichert und du bist angemeldet.</div>
+      <div class="form-err" id="pfErr" style="display:none"></div>
     </div>
     <div class="popup-foot">
       <button class="btn btn-ghost" onclick="closeProfile()">Abbrechen</button>
-      <button class="btn btn-primary" onclick="submitProfile()">Profil speichern & Anfrage öffnen</button>
+      <button class="btn btn-primary" id="pfSubmitBtn" onclick="submitProfile()">Registrieren</button>
+    </div>
+  </div>
+  <div id="pfVerify" style="display:none">
+    <div class="popup-body">
+      <div class="req-intro">Wir haben einen 6-stelligen Code an <b id="pfSentMail"></b>
+        geschickt. Gib ihn ein, um dein Profil zu bestätigen und dich anzumelden.</div>
+      <input class="code-input" id="pfCode" inputmode="numeric" maxlength="6" placeholder="······">
+      <div class="form-err" id="pfCodeErr" style="display:none"></div>
+    </div>
+    <div class="popup-foot">
+      <button class="btn btn-ghost" onclick="backToProfileForm()">Zurück</button>
+      <button class="btn btn-primary" id="pfVerifyBtn" onclick="confirmProfileCode()">Bestätigen & anmelden</button>
     </div>
   </div>
 </div>
@@ -515,6 +528,7 @@ let activeBrand = null;
 let activeCat = 'Alle';
 let reqGroupCount = 0;
 let pendingLoginEmail = '';
+let pendingProfile = null;
 let session = {loggedIn:false, email:null, profile:null};
 
 /* ============================================================
@@ -733,7 +747,10 @@ function renderCart(){
 /* ============================================================
    Anfrage-Flow (Demo: noch kein DB-Schreiben)
    ============================================================ */
-function requestFlow(){ if(session.profile) openRequest(); else openProfile(); }
+function requestFlow(){
+  if(session.loggedIn && session.profile) openRequest();
+  else openProfile();
+}
 function openRequest(){
   const items = Object.values(cart);
   if(!items.length) return;
@@ -778,19 +795,102 @@ function closeRequest(){
     document.getElementById('overlay').classList.remove('open');
 }
 
-/* ---- Händler-Profil (Demo) ---- */
+/* ---- Registrierung / Händler-Profil ---- */
 function openProfile(){
   document.getElementById('pfForm').style.display = '';
+  document.getElementById('pfVerify').style.display = 'none';
+  document.getElementById('pfErr').style.display = 'none';
+  document.getElementById('pfCodeErr').style.display = 'none';
+  document.getElementById('pfCode').value = '';
   if(session.email) document.getElementById('pfEmail').value = session.email;
   document.getElementById('overlay').classList.add('open');
   document.getElementById('profilePopup').classList.add('open');
 }
-function submitProfile(){
-  session.profile = {
+function collectProfile(){
+  return {
     name:gv('pfName'), role:gv('pfRole'), phone:gv('pfPhone'), email:gv('pfEmail'),
     branch:gv('pfBranch'), stores:gv('pfStores'), volume:gv('pfVolume'), addr:gv('pfAddr')
   };
-  renderCart();
+}
+function validateProfile(p){
+  if(!p.name) return 'Bitte deinen Namen eingeben.';
+  if(!p.role) return 'Bitte deine Funktion eingeben.';
+  if(!p.phone) return 'Bitte eine Telefonnummer eingeben.';
+  if(!p.email) return 'Bitte eine E-Mail-Adresse eingeben.';
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) return 'Bitte eine gültige E-Mail-Adresse eingeben.';
+  if(!p.stores || parseInt(p.stores) < 1) return 'Bitte die Anzahl der Filialen eingeben (mindestens 1).';
+  if(!p.addr) return 'Bitte die Adresse des Ladenlokals eingeben.';
+  return null;
+}
+async function saveProfile(){
+  const {data:{user}} = await sb.auth.getUser();
+  if(!user) return false;
+  const p = pendingProfile;
+  const {error} = await sb.from('retailers').upsert({
+    id: user.id,
+    email: p.email,
+    ansprechpartner_name: p.name,
+    ansprechpartner_funktion: p.role,
+    telefon: p.phone,
+    branche: p.branch,
+    anzahl_filialen: parseInt(p.stores) || null,
+    handelsvolumen: p.volume,
+    adresse: p.addr,
+    status: 'neu'
+  });
+  if(error){ console.error('saveProfile', error); return false; }
+  session.profile = {name:p.name, role:p.role, phone:p.phone, email:p.email,
+    branch:p.branch, stores:p.stores, volume:p.volume, addr:p.addr};
+  return true;
+}
+async function submitProfile(){
+  const p = collectProfile();
+  const err = document.getElementById('pfErr');
+  const msg = validateProfile(p);
+  if(msg){ err.textContent = msg; err.style.display = ''; return; }
+  err.style.display = 'none';
+  pendingProfile = p;
+  const btn = document.getElementById('pfSubmitBtn');
+  // Schon eingeloggt -> kein neuer Code, Profil direkt speichern
+  if(session.loggedIn){
+    btn.disabled = true; btn.textContent = 'Speichere …';
+    const ok = await saveProfile();
+    btn.disabled = false; btn.textContent = 'Registrieren';
+    if(!ok){ err.textContent = 'Profil konnte nicht gespeichert werden. Bitte erneut versuchen.'; err.style.display=''; return; }
+    renderAuth(); renderCart();
+    document.getElementById('profilePopup').classList.remove('open');
+    openRequest();
+    return;
+  }
+  // Nicht eingeloggt -> Code an die angegebene E-Mail senden
+  btn.disabled = true; btn.textContent = 'Sende Code …';
+  const {error} = await sb.auth.signInWithOtp({email:p.email});
+  btn.disabled = false; btn.textContent = 'Registrieren';
+  if(error){ err.textContent = 'Code konnte nicht gesendet werden: ' + error.message; err.style.display=''; return; }
+  document.getElementById('pfSentMail').textContent = p.email;
+  document.getElementById('pfForm').style.display = 'none';
+  document.getElementById('pfVerify').style.display = '';
+  document.getElementById('pfCode').focus();
+}
+function backToProfileForm(){
+  document.getElementById('pfVerify').style.display = 'none';
+  document.getElementById('pfForm').style.display = '';
+}
+async function confirmProfileCode(){
+  const code = gv('pfCode');
+  const err = document.getElementById('pfCodeErr');
+  if(!code){ err.textContent = 'Bitte Code eingeben.'; err.style.display=''; return; }
+  const btn = document.getElementById('pfVerifyBtn');
+  btn.disabled = true; btn.textContent = 'Prüfe …'; err.style.display='none';
+  const {data,error} = await sb.auth.verifyOtp({email:pendingProfile.email, token:code, type:'email'});
+  if(error){ btn.disabled=false; btn.textContent='Bestätigen & anmelden';
+    err.textContent='Code ungültig oder abgelaufen.'; err.style.display=''; return; }
+  session.loggedIn = true;
+  session.email = data.user.email;
+  const ok = await saveProfile();
+  btn.disabled = false; btn.textContent = 'Bestätigen & anmelden';
+  if(!ok){ err.textContent = 'Angemeldet — aber das Profil-Speichern ist fehlgeschlagen. Bitte erneut versuchen.'; err.style.display=''; return; }
+  renderAuth(); renderCart();
   document.getElementById('profilePopup').classList.remove('open');
   openRequest();
 }
@@ -809,7 +909,8 @@ function renderAuth(){
     a.innerHTML = `<span class="verify-chip vc-verified"><span class="dot2"></span>${escTxt(session.email)}</span>
       <button class="link-btn" onclick="logout()">Abmelden</button>`;
   } else {
-    a.innerHTML = `<button class="link-btn" onclick="openLogin()">Anmelden</button>`;
+    a.innerHTML = `<button class="link-btn" onclick="openProfile()">Registrieren</button>
+      <button class="link-btn" onclick="openLogin()">Login</button>`;
   }
 }
 function openLogin(){
