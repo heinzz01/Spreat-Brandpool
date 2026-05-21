@@ -841,6 +841,10 @@ async function saveProfile(){
   if(error){ console.error('saveProfile', error); return false; }
   session.profile = {name:p.name, role:p.role, phone:p.phone, email:p.email,
     branch:p.branch, stores:p.stores, volume:p.volume, addr:p.addr};
+  // Spreat automatisch benachrichtigen — Fehler blockieren die Registrierung NICHT
+  try {
+    await sb.functions.invoke('notify-registration', {body: p});
+  } catch(e){ console.warn('notify-registration fehlgeschlagen:', e); }
   return true;
 }
 async function submitProfile(){
