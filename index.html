@@ -54,9 +54,10 @@
   .brand-name{font-weight:700;font-size:17px;letter-spacing:-.01em}
   .brand-tag{color:var(--muted);font-size:12.5px}
   .brand-row-head .spacer{flex:1}
-  .link-btn{display:inline-flex;align-items:center;gap:5px;background:var(--bg);
-    border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:12.5px;
-    font-weight:600;color:var(--text);cursor:pointer;text-decoration:none}
+  .link-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
+    border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-size:12.5px;
+    font-weight:600;color:var(--text);cursor:pointer;text-decoration:none;
+    font-family:inherit;line-height:1.2;box-sizing:border-box;height:32px;min-width:104px}
   .link-btn:hover{background:#eef0f3}
   .meta-pill{background:var(--bg);border-radius:999px;padding:5px 11px;font-size:12px;color:var(--muted)}
   .brand-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
@@ -108,6 +109,8 @@
   .meta-chip{background:var(--bg);border-radius:9px;padding:7px 12px;font-size:12.5px}
   .meta-chip b{font-weight:700}
   .modal-meta .btn{margin-left:auto}
+  .modal-meta .modal-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .modal-meta .modal-actions .btn{margin-left:0}
 
   .modal-toolbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;
     gap:12px;flex-wrap:wrap;align-items:center;background:var(--card)}
@@ -249,7 +252,7 @@
 
 <div class="wrap">
   <div class="hero">
-    <h1>Brandpool für deinen Laden</h1>
+    <h1>Finde die nächsten Bestseller für dein Sortiment</h1>
     <p>Stell dir dein Wunschsortiment aus geprüften E-Commerce-Marken zusammen. Trage ein,
        wie oft du jedes Produkt pro Monat verkaufst — der Rechner zeigt dir live deine
        Netto-Marge. Am Ende fragst du alle Marken mit einem Klick an.</p>
@@ -257,7 +260,7 @@
 
   <div class="toolbar">
     <div class="search">
-      <input type="text" id="brandSearch" placeholder="Marke suchen …" oninput="renderBrands()">
+      <input type="text" id="brandSearch" placeholder="Marken und Produkte finden …" oninput="renderBrands()">
     </div>
     <span class="count-note" id="brandCount"></span>
   </div>
@@ -546,18 +549,40 @@ function prodImg(p){
     onerror="this.style.display='none'">`;
   return '📦';
 }
+// Bilder einer Marke vorladen (Cache wärmen), bevor sie geöffnet wird
+const _prefetched = new Set();
+function prefetchBrand(id){
+  if(_prefetched.has(id)) return; _prefetched.add(id);
+  for(const p of dataProvider.getProducts(id).slice(0,12)){
+    if(p.bild_url){ const i = new Image(); i.src = p.bild_url; }
+  }
+}
 function renderBrands(){
   if(!_brands){ return; }
-  const q = (document.getElementById('brandSearch').value||'').toLowerCase();
-  const brands = dataProvider.getBrands().filter(b => b.name.toLowerCase().includes(q));
+  const q = (document.getElementById('brandSearch').value||'').toLowerCase().trim();
+  const brands = dataProvider.getBrands().filter(b => {
+    if(!q) return true;
+    if(b.name.toLowerCase().includes(q)) return true;
+    if((b.kurzbeschreibung||'').toLowerCase().includes(q)) return true;
+    return dataProvider.getProducts(b.marken_id).some(p => (p.produktname||'').toLowerCase().includes(q));
+  });
   const grid = document.getElementById('brandGrid');
   document.getElementById('brandCount').textContent =
     `${brands.length} Marken · ${_products.length} Produkte`;
   if(!brands.length){ grid.innerHTML='<div class="state-msg">Keine Marken gefunden.</div>'; return; }
   grid.innerHTML = brands.map(b => {
     const prods = dataProvider.getProducts(b.marken_id);
-    let preview = prods.filter(p => p.featured).slice(0,5);
-    if(preview.length < 5) preview = prods.slice(0,5);
+    // Bei reiner Produktsuche (Query trifft nicht die Marke) die Treffer zuerst zeigen
+    const brandMatch = !q || b.name.toLowerCase().includes(q) || (b.kurzbeschreibung||'').toLowerCase().includes(q);
+    const hits = (q && !brandMatch) ? prods.filter(p => (p.produktname||'').toLowerCase().includes(q)) : [];
+    let preview;
+    if(hits.length){
+      const ids = new Set(hits.map(p=>p.produkt_id));
+      preview = [...hits, ...prods.filter(p=>p.featured && !ids.has(p.produkt_id))].slice(0,5);
+    } else {
+      preview = prods.filter(p => p.featured).slice(0,5);
+      if(preview.length < 5) preview = prods.slice(0,5);
+    }
     const rest = prods.length - preview.length;
     const cells = preview.map(p => `
       <div class="brand-prod">
@@ -565,7 +590,7 @@ function renderBrands(){
         <div class="pname">${escTxt(p.produktname)}</div>
       </div>`).join('') +
       (rest > 0 ? `<div class="more-tile">${rest}+<br>mehr</div>` : '');
-    return `<div class="brand-row" onclick="openBrand('${b.marken_id}')">
+    return `<div class="brand-row" onclick="openBrand('${b.marken_id}')" onmouseenter="prefetchBrand('${b.marken_id}')">
       <div class="brand-row-head">
         ${brandLogoHtml(b)}
         <div>
@@ -600,8 +625,15 @@ function openBrand(id){
     <span class="meta-chip" data-tip="${esc(TIP.prov)}">Provision <b>${provLabel(activeBrand)}</b></span>
     <span class="meta-chip" data-tip="${esc(TIP.avg)}">Ø Warenkorb <b>${eur(activeBrand.avgCart)}</b></span>
     <span class="meta-chip" data-tip="${esc(TIP.count)}">${activeBrand.productCount} Produkte</span>
-    <button class="btn btn-ghost" onclick="openContact('${activeBrand.marken_id}')">✉︎ Marke kontaktieren</button>`;
-  const cats = ['Alle', ...new Set(dataProvider.getProducts(id).map(p=>p.kategorie).filter(Boolean))];
+    <div class="modal-actions">
+      ${activeBrand.website ? `<a class="btn btn-ghost" href="${esc(activeBrand.website)}" target="_blank" rel="noopener">Website ➜</a>` : ''}
+      <button class="btn btn-ghost" onclick="openContact('${activeBrand.marken_id}')">✉︎ Marke kontaktieren</button>
+    </div>`;
+  // Kategorien nach Häufigkeit, auf max. 15 begrenzt
+  const _catCount = {};
+  dataProvider.getProducts(id).forEach(p => { if(p.kategorie) _catCount[p.kategorie] = (_catCount[p.kategorie]||0)+1; });
+  const _topCats = Object.keys(_catCount).sort((a,b)=>_catCount[b]-_catCount[a]).slice(0,15);
+  const cats = ['Alle', ..._topCats];
   document.getElementById('mCats').innerHTML = cats.map((c,i) =>
     `<button class="cat-pill ${i===0?'active':''}" onclick="setCat(this,${JSON.stringify(c).replace(/"/g,'&quot;')})">${escTxt(c)}</button>`).join('');
   renderProducts();
