@@ -120,9 +120,16 @@
 
   .modal-toolbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;
     gap:12px;flex-wrap:wrap;align-items:center;background:var(--card)}
-  .cats{display:flex;gap:6px;flex-wrap:wrap}
+  .cats-wrap{display:flex;align-items:center;gap:4px;flex:1 1 100%;min-width:0}
+  .cats{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;flex:1 1 auto;min-width:0;
+    scrollbar-width:none;scroll-behavior:smooth}
+  .cats::-webkit-scrollbar{display:none}
+  .cats-arrow{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);
+    background:var(--bg);cursor:pointer;font-size:15px;line-height:1;display:grid;place-items:center;
+    color:var(--text)}
+  .cats-arrow:hover{background:#eef0f3}
   .cat-pill{background:var(--bg);border:1px solid var(--border);border-radius:999px;
-    padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--muted)}
+    padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;flex:0 0 auto}
   .cat-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
   .modal-body{padding:18px 24px 24px;overflow-y:auto}
@@ -356,7 +363,11 @@
     <div class="search" style="min-width:180px">
       <input type="text" id="prodSearch" placeholder="Produkt suchen …" oninput="renderProducts()">
     </div>
-    <div class="cats" id="mCats"></div>
+    <div class="cats-wrap">
+      <button class="cats-arrow" onclick="scrollCats(-1)" aria-label="Kategorien zurück">‹</button>
+      <div class="cats" id="mCats"></div>
+      <button class="cats-arrow" onclick="scrollCats(1)" aria-label="Kategorien weiter">›</button>
+    </div>
   </div>
   <div class="modal-body">
     <div class="prod-grid" id="prodGrid"></div>
@@ -789,6 +800,10 @@ function openBrand(id){
   renderProducts();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('brandModal').classList.add('open');
+}
+function scrollCats(dir){
+  const c = document.getElementById('mCats');
+  if(c) c.scrollBy({left: dir*240, behavior:'smooth'});
 }
 function setCat(el, c){
   activeCat = c;
