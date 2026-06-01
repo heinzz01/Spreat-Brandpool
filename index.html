@@ -17,11 +17,7 @@
     background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
   button{font-family:inherit;cursor:pointer;border:none}
   input,textarea,select{font-family:inherit}
-  [data-tip]{cursor:pointer}
-  /* Native Spinner-Pfeile an Zahlenfeldern ausblenden (eigene +/− Buttons) */
-  input[type=number]{-moz-appearance:textfield;appearance:textfield}
-  input[type=number]::-webkit-outer-spin-button,
-  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  [data-tip]{cursor:help}
 
   .tooltip{position:fixed;z-index:200;max-width:262px;background:#16181d;color:#fff;
     font-size:11.5px;line-height:1.5;padding:10px 12px;border-radius:10px;
@@ -31,9 +27,8 @@
   .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:40}
   .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
   .topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:19px;letter-spacing:-.02em}
-  .logo .logo-img{height:24px;width:auto;display:block;filter:brightness(0)}
-  .logo .logo-sub{font-weight:600;color:var(--muted);font-size:14px;letter-spacing:-.01em;padding-left:9px;border-left:1px solid var(--border)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em}
+  .logo .dot{width:26px;height:26px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:#fff;font-size:14px}
   .logo small{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:0}
 
   .hero{padding:34px 0 8px}
@@ -52,22 +47,16 @@
   .brand-row{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
     padding:18px 20px;cursor:pointer;transition:box-shadow .12s,border-color .12s}
   .brand-row:hover{box-shadow:var(--shadow);border-color:#d3d6de}
-  .brand-row-head{display:flex;align-items:flex-start;gap:10px 12px;flex-wrap:wrap;margin-bottom:15px}
-  .brand-row-id{display:flex;align-items:center;gap:10px;flex:1 1 auto;min-width:0}
-  .brand-row-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-left:auto;order:2}
-  .brand-row-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1 1 100%;order:3}
+  .brand-row-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px}
   .brand-logo{border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:800;flex-shrink:0;overflow:hidden}
   .brand-logo img{width:100%;height:100%;object-fit:contain;background:#fff}
   .brand-row-head .brand-logo{width:42px;height:42px;font-size:15px}
   .brand-name{font-weight:700;font-size:17px;letter-spacing:-.01em}
-  .brand-tag{color:var(--muted);font-size:12.5px;display:-webkit-box;-webkit-line-clamp:2;
-    -webkit-box-orient:vertical;overflow:hidden;max-width:520px}
-  .brand-head-text{min-width:0}
+  .brand-tag{color:var(--muted);font-size:12.5px}
   .brand-row-head .spacer{flex:1}
-  .link-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
-    border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-size:12.5px;
-    font-weight:600;color:var(--text);cursor:pointer;text-decoration:none;
-    font-family:inherit;line-height:1.2;box-sizing:border-box;height:32px;min-width:104px}
+  .link-btn{display:inline-flex;align-items:center;gap:5px;background:var(--bg);
+    border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:12.5px;
+    font-weight:600;color:var(--text);cursor:pointer;text-decoration:none}
   .link-btn:hover{background:#eef0f3}
   .meta-pill{background:var(--bg);border-radius:999px;padding:5px 11px;font-size:12px;color:var(--muted)}
   .brand-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
@@ -75,8 +64,6 @@
   .brand-prod .thumb{aspect-ratio:1;border-radius:11px;display:grid;place-items:center;font-size:30px;
     overflow:hidden;background:#fff;border:1px solid var(--border)}
   .brand-prod .thumb img{width:100%;height:100%;object-fit:contain}
-  .brand-prod .prod-thumb{aspect-ratio:1;border-radius:11px;overflow:hidden;background:#fff;
-    border:1px solid var(--border)}
   .brand-prod .pname{font-size:11.5px;text-align:center;color:var(--muted);line-height:1.3;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .more-tile{border:1px dashed #c7caf2;border-radius:11px;display:grid;place-items:center;
@@ -121,8 +108,6 @@
   .meta-chip{background:var(--bg);border-radius:9px;padding:7px 12px;font-size:12.5px}
   .meta-chip b{font-weight:700}
   .modal-meta .btn{margin-left:auto}
-  .modal-meta .modal-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
-  .modal-meta .modal-actions .btn{margin-left:0}
 
   .modal-toolbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;
     gap:12px;flex-wrap:wrap;align-items:center;background:var(--card)}
@@ -133,8 +118,7 @@
 
   .modal-body{padding:18px 24px 24px;overflow-y:auto}
   .prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:14px}
-  .prod-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:border-color .12s,box-shadow .12s}
-  .prod-card:hover{border-color:var(--accent);box-shadow:0 6px 20px rgba(16,18,29,.09)}
+  .prod-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
   .prod-thumb{aspect-ratio:1;display:grid;place-items:center;font-size:40px;position:relative;background:#fff}
   .prod-thumb img{width:100%;height:100%;object-fit:contain}
   .prod-cat{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.92);font-size:10px;
@@ -152,71 +136,6 @@
   .prod-btn:hover{background:#e0e3fd}
   .prod-btn.in{background:var(--green-soft);color:var(--green)}
   .no-results{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;font-size:14px}
-
-  /* Produkt-Bildergalerie (mehrere Bilder pro Produkt – Pfeile beim Hover) */
-  .prod-thumb .g-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-  .prod-thumb .g-nav{position:absolute;top:50%;transform:translateY(-50%);width:28px;height:28px;
-    border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(16,18,29,.18);
-    color:var(--text);font-size:17px;line-height:1;display:grid;place-items:center;
-    opacity:0;transition:opacity .12s;z-index:3;padding-bottom:2px}
-  .prod-thumb .g-prev{left:7px}
-  .prod-thumb .g-next{right:7px}
-  .prod-thumb:hover .g-nav{opacity:1}
-  .prod-thumb .g-nav:hover{background:#fff}
-  .prod-thumb .g-dots{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);
-    display:flex;gap:4px;z-index:3}
-  .prod-thumb .g-dots i{width:5px;height:5px;border-radius:50%;background:rgba(16,18,29,.22);transition:background .12s}
-  .prod-thumb .g-dots i.on{background:var(--accent)}
-  .prod-thumb .g-ph{font-size:40px}
-  .prod-desc-ph{font-style:italic;opacity:.5}
-
-  /* Produktdetail-Popup (drittes Popup: Klick auf eine Produktkarte) */
-  .popup.pd{width:min(860px,95vw);max-width:860px}
-  .pd-x{position:absolute;top:12px;right:12px;z-index:5;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(16,18,29,.15)}
-  .pd-grid{display:grid;grid-template-columns:1fr 1fr}
-  .pd-media{background:#fff;padding:18px;display:flex;flex-direction:column;gap:12px;border-right:1px solid var(--border)}
-  .pd-stage{position:relative;flex:1;min-height:280px;display:grid;place-items:center;background:#fff;border-radius:12px;overflow:hidden}
-  .pd-stage .pd-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-  .pd-stage .pd-ph{font-size:66px}
-  .pd-stage .g-nav{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;
-    border-radius:50%;background:rgba(255,255,255,.95);box-shadow:0 2px 10px rgba(16,18,29,.2);
-    color:var(--text);font-size:21px;line-height:1;display:grid;place-items:center;z-index:3;padding-bottom:2px}
-  .pd-stage .g-prev{left:10px}
-  .pd-stage .g-next{right:10px}
-  .pd-thumbs{display:flex;gap:8px;flex-wrap:wrap}
-  .pd-thumb-b{width:50px;height:50px;border-radius:9px;border:2px solid var(--border);overflow:hidden;background:#fff;padding:0}
-  .pd-thumb-b.on{border-color:var(--accent)}
-  .pd-thumb-b img{width:100%;height:100%;object-fit:contain}
-  .pd-info{padding:30px 28px 26px;display:flex;flex-direction:column;gap:10px}
-  .pd-cat{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-  .pd-name{font-size:23px;letter-spacing:-.02em;line-height:1.2}
-  .pd-brand{font-size:13px;color:var(--muted)}
-  .pd-desc{font-size:13.5px;color:var(--text);line-height:1.55;margin-top:2px}
-  .pd-desc.pd-desc-ph{font-style:italic;opacity:.55}
-  .pd-spacer{flex:1;min-height:10px}
-  .pd-pricebox{display:flex;align-items:center;justify-content:space-between;gap:14px;
-    background:var(--bg);border-radius:12px;padding:15px 17px}
-  .pd-price{display:flex;align-items:baseline;gap:6px;flex-shrink:0;white-space:nowrap}
-  .pd-uvp{font-size:27px;font-weight:800;white-space:nowrap}
-  .pd-uvp-l{font-size:11px;color:var(--muted)}
-  .pd-margin{font-size:12px;color:var(--green);font-weight:600;text-align:right;line-height:1.5}
-  .pd-margin b{font-size:18px;display:block}
-  .pd-margin span{display:block}
-  .pd-add{width:100%;padding:14px;font-size:14px}
-  .pd-add.in{background:var(--green);color:#fff}
-  @media(max-width:640px){
-    .popup.pd{width:96vw}
-    .pd-grid{grid-template-columns:1fr}
-    .pd-media{border-right:none;border-bottom:1px solid var(--border)}
-    .pd-info{padding:22px 20px}
-  }
-
-  /* Impressum-Footer */
-  .site-foot{max-width:1180px;margin:36px auto 90px;padding:22px 22px 0;border-top:1px solid var(--border);
-    display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
-  .site-foot a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
-  .site-foot a:hover{color:var(--text);border-bottom-color:var(--border)}
-  .site-foot .sep{opacity:.5}
 
   .drawer{position:fixed;z-index:55;right:0;top:0;height:100vh;width:min(440px,100vw);
     background:var(--card);transform:translateX(105%);transition:transform .25s ease;
@@ -310,46 +229,7 @@
     color:#fff;font-size:10px;display:grid;place-items:center;flex-shrink:0}
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-  /* ============================================================
-     Mobile / Tablet
-     ============================================================ */
-  @media(max-width:760px){
-    .wrap{padding:0 16px}
-    .hero{padding:24px 0 4px}
-    .hero h1{font-size:25px}
-    .hero p{font-size:14px}
-    .brand-row{padding:15px 15px}
-    .brand-name{font-size:16px}
-    /* Modal nimmt den ganzen Screen ein */
-    .modal{inset:0;left:0;top:0;width:100%;max-width:100%;height:100%;max-height:100%;
-      border-radius:0;transform:none}
-    .modal-head{padding:16px 16px}
-    .modal-toolbar{padding:12px 16px}
-    .modal-body{padding:14px 16px 22px}
-    .modal-meta{gap:8px}
-    .modal-meta .btn{margin-left:0}
-    /* Produktkarten: 2 Spalten statt 6 */
-    .prod-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  }
-  @media(max-width:560px){
-    .hero h1{font-size:23px}
-    /* Topbar entschlacken: langer Warenkorb-Button weg, FAB bleibt */
-    #cartBtn{display:none}
-    .logo .logo-img{height:20px}
-    .logo .logo-sub{font-size:13px}
-    /* Marken-Vorschau-Strip: 2 Spalten */
-    .brand-strip{grid-template-columns:repeat(2,1fr);gap:10px}
-    /* Marken-Kopf kompakter: Badge/Pills umbrechen sauber */
-    .brand-row-head{gap:8px;margin-bottom:12px}
-    .brand-row-head .spacer{display:none}
-    .brand-row-head .link-btn{padding:5px 10px;font-size:12px;height:30px;min-width:84px}
-    /* Formular-Zweispalter stapeln */
-    .field-row{grid-template-columns:1fr}
-    /* FAB etwas kompakter */
-    .fab{right:14px;bottom:14px;padding:12px 16px;font-size:13px}
-    /* Drawer volle Breite */
-    .drawer{width:100vw}
-  }
+  @media(max-width:560px){.hero h1{font-size:24px}}
 </style>
 </head>
 <body>
@@ -357,28 +237,27 @@
 <div class="topbar">
   <div class="wrap">
     <div class="logo">
-      <img class="logo-img" src="https://cdn.prod.website-files.com/6675b8a846c2cbec25f829cb/6675cb10048c54618b55d8df_Logo_Spreat_SVG_3920px.svg" alt="Spreat">
-      <span class="logo-sub">Brandpool</span>
+      <span class="dot">S</span>
+      <span>Spreat Brandpool</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
       <span id="authArea" style="display:flex;align-items:center;gap:8px"></span>
-      <button class="btn btn-ghost" id="cartBtn" onclick="openCart()">🛒 Meine Sortiments-Anfrage</button>
+      <button class="btn btn-ghost" onclick="openCart()">🛒 Meine Sortiments-Anfrage</button>
     </div>
   </div>
 </div>
 
 <div class="wrap">
   <div class="hero">
-    <h1>Finde die nächsten Bestseller für dein Sortiment</h1>
-    <p>Der Spreat Brandpool zeigt dir geprüfte Marken, die du als Einzelhändler neu auf deine Ladenfläche
-       ausstellen und verkaufen kannst. Schätze pro Produkt, wie oft es sich im Monat verkauft –
-       und sieh sofort, welche Marge für dich übrig bleibt. Passt es für dich, fragst du
-       die ausgewählten Produkte mit einem Klick bei allen Marken an.</p>
+    <h1>Brandpool für deinen Laden</h1>
+    <p>Stell dir dein Wunschsortiment aus geprüften E-Commerce-Marken zusammen. Trage ein,
+       wie oft du jedes Produkt pro Monat verkaufst — der Rechner zeigt dir live deine
+       Netto-Marge. Am Ende fragst du alle Marken mit einem Klick an.</p>
   </div>
 
   <div class="toolbar">
     <div class="search">
-      <input type="text" id="brandSearch" placeholder="Marken und Produkte finden …" oninput="renderBrands()">
+      <input type="text" id="brandSearch" placeholder="Marke suchen …" oninput="renderBrands()">
     </div>
     <span class="count-note" id="brandCount"></span>
   </div>
@@ -388,16 +267,8 @@
   </div>
 </div>
 
-<footer class="site-foot">
-  <span>© <span id="footYear"></span> Spreat</span>
-  <span class="sep">·</span>
-  <a href="https://www.spreat.com/imprint" target="_blank" rel="noopener">Impressum</a>
-  <span class="sep">·</span>
-  <a href="https://www.spreat.com" target="_blank" rel="noopener">spreat.com</a>
-</footer>
-
 <button class="fab" id="fab" onclick="openCart()">
-  <span id="fabIcon">🛒</span> <span id="fabCount">0 Produkte</span>
+  🛒 <span id="fabCount">0 Produkte</span>
   <span class="fab-sep"></span>
   <span class="fab-margin" id="fabMargin">+0 €/Monat</span>
 </button>
@@ -432,8 +303,8 @@
 <div class="drawer" id="drawer">
   <div class="drawer-head">
     <div>
-      <h2 id="drawerTitle">Meine Sortiments-Anfrage</h2>
-      <p id="drawerSub">Marge kalkulieren & Marken direkt anfragen</p>
+      <h2>Meine Sortiments-Anfrage</h2>
+      <p>Marge kalkulieren & Marken direkt anfragen</p>
     </div>
     <button class="x-close" style="margin-left:auto" onclick="closeAll()">✕</button>
   </div>
@@ -595,29 +466,6 @@
   </div>
 </div>
 
-<!-- Produktdetail (drittes Popup) -->
-<div class="popup pd" id="productPopup">
-  <button class="x-close pd-x" onclick="closeProduct()">✕</button>
-  <div class="pd-grid">
-    <div class="pd-media">
-      <div class="pd-stage" id="pdStage" data-pdidx="0"></div>
-      <div class="pd-thumbs" id="pdThumbs"></div>
-    </div>
-    <div class="pd-info">
-      <div class="pd-cat" id="pdCat"></div>
-      <h3 class="pd-name" id="pdName"></h3>
-      <div class="pd-brand" id="pdBrand"></div>
-      <div class="pd-desc" id="pdDesc"></div>
-      <div class="pd-spacer"></div>
-      <div class="pd-pricebox">
-        <div class="pd-price"><span class="pd-uvp" id="pdPrice"></span><span class="pd-uvp-l">UVP</span></div>
-        <div class="pd-margin" id="pdMargin"></div>
-      </div>
-      <button class="btn btn-primary pd-add" id="pdAddBtn" onclick="pdToggleCart()">+ Zur Anfrage</button>
-    </div>
-  </div>
-</div>
-
 <script>
 /* ============================================================
    SUPABASE — Datenquelle & Login
@@ -626,89 +474,24 @@ const SUPABASE_URL = 'https://lzgrcnkatchkrvlrjnxa.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_L0JTr0QFuUMiS5S5JPCPig_auZT1zZF';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* ============================================================
-   CONFIG — zentrale Stellschrauben (hier Platzhalter anpassen)
-   ------------------------------------------------------------
-   Alles, was sich später leicht ändern soll, steht hier:
-   Wording des "Warenkorbs", Bild-Konvention, Platzhalter-Texte.
-   ============================================================ */
-const CONFIG = {
-  // --- Wording "Sortiments-Anfrage" vs. "Warenkorb" -------------
-  // Kollegen-Einwand: "Warenkorb" suggeriert Kaufzwang. Zum schnellen
-  // Zurückstellen einfach diese Strings tauschen (z.B. 'Mein Warenkorb').
-  cartLabel:   'Meine Sortiments-Anfrage',
-  cartSubline: 'Marge kalkulieren & Marken direkt anfragen',
-  cartIcon:    '🛒',
-
-  // --- Begriff "Provision" (Team-Entscheidung) ------------------
-  // Globaler Begriff für den Händler-Anteil. Greift in ALLEN Labels
-  // & Tooltips. Zum Zurückstellen einfach auf 'Provision' ändern.
-  provisionLabel: 'Laden-Provision',
-
-  // --- Bilder: Supabase Storage -------------------------------
-  // Bilder liegen im öffentlichen Bucket "markenpool".
-  //   Logos:    logos/<marken_id>.<ext>
-  //   Produkte: produkte/<produkt_id>.<ext>  (mehrere: -1, -2 …)
-  // bild_url/logo_url in der DB = volle öffentliche URL.
-  storageBucket: 'markenpool',
-  storageBase:   SUPABASE_URL + '/storage/v1/object/public/markenpool/',
-
-  // --- Platzhalter-Texte (sichtbar bis echte Daten da sind) ----
-  descPlaceholder: 'Produktbeschreibung folgt …',
-};
-// Bequemer Helfer, falls in der DB nur ein Pfad statt voller URL steht:
-const storageUrl = path => /^https?:\/\//.test(path) ? path : CONFIG.storageBase + String(path||'').replace(/^\/+/,'');
-
-// Übergangslösung für externe Galeriebilder: Shopify-CDN kann on-the-fly verkleinern.
-// Wir laden so nur die wirklich gebrauchte Größe statt des Originals -> deutlich schneller.
-// Supabase-/andere URLs bleiben unverändert.
-function cdnResize(url, w){
-  if(!url) return url;
-  if(/cdn\.shopify\.com|\/cdn\/shop\//.test(url)){
-    const clean = url.replace(/([?&])(width|height)=\d+/g, '').replace(/[?&]$/,'');
-    return clean + (clean.includes('?') ? '&' : '?') + 'width=' + w;
-  }
-  return url;
-}
-// Bild eines Produkts vorladen (Cache wärmen), bevor die Marke geöffnet wird
-const _prefetched = new Set();
-function prefetchBrand(id){
-  if(_prefetched.has(id)) return; _prefetched.add(id);
-  const ps = dataProvider.getProducts(id).slice(0, 12);
-  for(const p of ps){
-    const im = productImages(p)[0];
-    if(im){ const i = new Image(); i.src = cdnResize(im, 400); }
-  }
-}
-
 let _brands = null, _products = null;
 
 const dataProvider = {
   async load(){
-    // Marken (wenige Zeilen, ein Request reicht)
-    const {data:bd,error:be} = await sb.from('brands').select('*').eq('sichtbar', true).order('position');
+    const [{data:bd,error:be},{data:pd,error:pe}] = await Promise.all([
+      sb.from('brands').select('*').eq('sichtbar', true).order('position'),
+      sb.from('products').select('*').eq('sichtbar', true).order('produkt_id'),
+    ]);
     if(be) throw be;
+    if(pe) throw pe;
     _brands = bd || [];
-    // Produkte: PostgREST liefert max. 1000 Zeilen pro Request -> paginieren,
-    // sonst fehlen Marken, die alphabetisch hinter den ersten 1000 produkt_ids liegen.
-    const PAGE = 1000;
-    let all = [], from = 0;
-    while(true){
-      const {data:pd,error:pe} = await sb.from('products').select('*')
-        .eq('sichtbar', true).order('produkt_id').range(from, from + PAGE - 1);
-      if(pe) throw pe;
-      if(!pd || !pd.length) break;
-      all = all.concat(pd);
-      if(pd.length < PAGE) break;
-      from += PAGE;
-    }
-    _products = all.map(p => ({...p, uvp_preis: Number(p.uvp_preis)||0,
+    _products = (pd || []).map(p => ({...p, uvp_preis: Number(p.uvp_preis)||0,
       provision_prozent: Number(p.provision_prozent)||0}));
   },
   getBrands(){
     return _brands.map(b => {
       const ps = _products.filter(p => p.marken_id === b.marken_id);
-      const avg = ps.length ? ps.reduce((s,p)=>s+p.uvp_preis,0)/ps.length : 0;
+      const avg = ps.length ? Math.round(ps.reduce((s,p)=>s+p.uvp_preis,0)/ps.length) : 0;
       return {...b, productCount: ps.length, avgCart: avg, color: colorFor(b.marken_id)};
     });
   },
@@ -721,7 +504,7 @@ const dataProvider = {
 const PALETTE = ['#1c64f2','#0ea5b7','#1f7a3d','#e26a1f','#ff6b35','#d6336c','#7c3aed','#0891b2'];
 function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
 function colorFor(id){ return PALETTE[hash(id) % PALETTE.length]; }
-const eur = n => (Number(n)||0).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+const eur = n => Math.round(Number(n)||0).toLocaleString('de-DE') + ' €';
 const initials = n => (n||'?').replace(/[^A-Za-zÄÖÜ ]/g,'').trim().split(' ')
   .map(w=>w[0]).slice(0,2).join('').toUpperCase() || '?';
 const esc = s => String(s==null?'':s).replace(/"/g,'&quot;');
@@ -731,16 +514,15 @@ const marginOf = p => p.uvp_preis * p.provision_prozent / 100;
 function provLabel(b){ return b.provision_min===b.provision_max
   ? b.provision_min+' %' : b.provision_min+'–'+b.provision_max+' %'; }
 
-const PROV = CONFIG.provisionLabel;   // zentraler Begriff (s. CONFIG)
 const TIP = {
-  prov:`${PROV} = dein Anteil am Verkaufspreis. Bei einem Verkauf behältst du diesen Anteil des Preises als Marge — den Rest erhält die Marke.`,
+  prov:'Provision = dein Anteil am Verkaufspreis. Bei einem Verkauf behältst du diesen Anteil des Preises als Marge — den Rest erhält die Marke.',
   count:'Anzahl der Produkte dieser Marke, die du in deine Sortiments-Anfrage aufnehmen kannst.',
-  avg:'Geschätzter Wert eines typischen Einkaufs bei dieser Marke.',
+  avg:'Durchschnittlicher Verkaufspreis (UVP) über alle Produkte dieser Marke — grobe Orientierung pro Verkauf.',
   uvp:'UVP = unverbindliche Preisempfehlung. Zu diesem Preis verkaufst du das Produkt an deine Endkunden.',
   units:'Summe aller Stückzahlen, die du pro Monat über alle Produkte verkaufen möchtest.',
   revenue:'Gesamter Verkaufswert pro Monat zu UVP — der Umsatz, bevor die Marke ihren Anteil erhält.',
-  avgprov:`Gewichteter Durchschnitt der ${PROV}-Sätze aller Produkte in deiner Anfrage.`,
-  netmargin:`Dein Verdienst pro Monat: Umsatz × ${PROV}. Dieser Betrag bleibt bei dir.`,
+  avgprov:'Gewichteter Durchschnitt der Provisionssätze aller Produkte in deiner Anfrage.',
+  netmargin:'Dein Verdienst pro Monat: Umsatz × Provision. Dieser Betrag bleibt bei dir.',
 };
 
 let cart = {};
@@ -759,111 +541,44 @@ function brandLogoHtml(b, cls){
   if(b.logo_url) return `<div class="brand-logo ${cls||''}"><img src="${esc(b.logo_url)}" alt=""></div>`;
   return `<div class="brand-logo ${cls||''}" style="background:${b.color}">${initials(b.name)}</div>`;
 }
-/* Liefert ALLE Bilder eines Produkts als Array.
-   Heute: meist genau 1 (bild_url). Sobald der Scraper/die DB ein Feld
-   `bild_urls` (JSON-Array, Komma-/Zeilen-Liste oder text[]) mitliefert,
-   zeigt die Galerie automatisch alle Bilder — ohne weitere Änderung. */
-function productImages(p){
-  let imgs = [];
-  const raw = p.bild_urls;
-  if(Array.isArray(raw)) imgs = raw.slice();
-  else if(typeof raw === 'string' && raw.trim()){
-    try { const j = JSON.parse(raw); if(Array.isArray(j)) imgs = j; }
-    catch(_){ imgs = raw.split(/[\n,;|]+/); }
-  }
-  imgs = imgs.map(s => String(s||'').trim()).filter(Boolean).map(storageUrl);
-  if(!imgs.length && p.bild_url) imgs = [storageUrl(p.bild_url)];
-  return imgs;
-}
-/* Einzelbild (Marken-Vorschau, Warenkorb-Thumbnail) */
 function prodImg(p){
-  const im = productImages(p);
-  return im.length
-    ? `<img src="${esc(cdnResize(im[0],400))}" loading="lazy" alt="" onerror="this.style.display='none'">`
-    : '📦';
-}
-/* Volle Galerie mit Hover-Pfeilen (Produktkarten im Marken-Modal) */
-function prodGallery(p){
-  const im = productImages(p);
-  if(!im.length) return '<span class="g-ph">📦</span>';
-  const slides = im.map((src,i) =>
-    `<img class="g-img" src="${esc(cdnResize(src,400))}" alt="" ${i?'loading="lazy"':''}
-       style="display:${i===0?'block':'none'}" onerror="this.style.display='none'">`).join('');
-  if(im.length === 1) return slides;
-  const dots = `<span class="g-dots">${im.map((_,i)=>`<i class="${i===0?'on':''}"></i>`).join('')}</span>`;
-  return slides +
-    `<button class="g-nav g-prev" onclick="galNav(event,this,-1)" aria-label="Vorheriges Bild">‹</button>
-     <button class="g-nav g-next" onclick="galNav(event,this,1)" aria-label="Nächstes Bild">›</button>` + dots;
-}
-/* Pfeil-Navigation; Zustand lebt im DOM (übersteht Filtern bis zum Re-Render) */
-function galNav(e, btn, dir){
-  e.stopPropagation();
-  const g = btn.closest('.prod-thumb');
-  const imgs = [...g.querySelectorAll('.g-img')];
-  if(imgs.length < 2) return;
-  let idx = (parseInt(g.dataset.gidx)||0) + dir;
-  if(idx < 0) idx = imgs.length - 1;
-  if(idx >= imgs.length) idx = 0;
-  imgs.forEach((im,i)=> im.style.display = i===idx ? 'block':'none');
-  g.dataset.gidx = idx;
-  const dots = g.querySelector('.g-dots');
-  if(dots) [...dots.children].forEach((d,i)=> d.classList.toggle('on', i===idx));
+  if(p.bild_url) return `<img src="${esc(p.bild_url)}" loading="lazy" alt=""
+    onerror="this.style.display='none'">`;
+  return '📦';
 }
 function renderBrands(){
   if(!_brands){ return; }
-  const q = (document.getElementById('brandSearch').value||'').toLowerCase().trim();
-  const brands = dataProvider.getBrands().filter(b => {
-    if(!q) return true;
-    if(b.name.toLowerCase().includes(q)) return true;
-    if((b.kurzbeschreibung||'').toLowerCase().includes(q)) return true;
-    // auch Produktnamen der Marke durchsuchen
-    return dataProvider.getProducts(b.marken_id)
-      .some(p => (p.produktname||'').toLowerCase().includes(q));
-  });
+  const q = (document.getElementById('brandSearch').value||'').toLowerCase();
+  const brands = dataProvider.getBrands().filter(b => b.name.toLowerCase().includes(q));
   const grid = document.getElementById('brandGrid');
   document.getElementById('brandCount').textContent =
     `${brands.length} Marken · ${_products.length} Produkte`;
   if(!brands.length){ grid.innerHTML='<div class="state-msg">Keine Marken gefunden.</div>'; return; }
   grid.innerHTML = brands.map(b => {
     const prods = dataProvider.getProducts(b.marken_id);
-    // Marken-Treffer (Name/Beschreibung) -> normale Hero-Vorschau.
-    // Nur bei reiner Produktsuche (Query trifft NICHT die Marke) zeigen wir die Produkt-Treffer.
-    const brandMatch = !q || b.name.toLowerCase().includes(q) || (b.kurzbeschreibung||'').toLowerCase().includes(q);
-    const hits = (q && !brandMatch) ? prods.filter(p => (p.produktname||'').toLowerCase().includes(q)) : [];
-    let preview;
-    if(hits.length){
-      const ids = new Set(hits.map(p=>p.produkt_id));
-      preview = [...hits, ...prods.filter(p=>p.featured && !ids.has(p.produkt_id))].slice(0,5);
-    } else {
-      preview = prods.filter(p => p.featured).slice(0,5);
-      if(preview.length < 5) preview = prods.slice(0,5);
-    }
+    let preview = prods.filter(p => p.featured).slice(0,5);
+    if(preview.length < 5) preview = prods.slice(0,5);
     const rest = prods.length - preview.length;
     const cells = preview.map(p => `
       <div class="brand-prod">
-        <div class="prod-thumb" data-gidx="0">${prodGallery(p)}</div>
+        <div class="thumb">${prodImg(p)}</div>
         <div class="pname">${escTxt(p.produktname)}</div>
       </div>`).join('') +
       (rest > 0 ? `<div class="more-tile">${rest}+<br>mehr</div>` : '');
-    return `<div class="brand-row" onclick="openBrand('${b.marken_id}')" onmouseenter="prefetchBrand('${b.marken_id}')">
+    return `<div class="brand-row" onclick="openBrand('${b.marken_id}')">
       <div class="brand-row-head">
-        <div class="brand-row-id">
-          ${brandLogoHtml(b)}
-          <div class="brand-head-text">
-            <div class="brand-name">${escTxt(b.name)}</div>
-            <div class="brand-tag">${escTxt(b.kurzbeschreibung)}</div>
-          </div>
+        ${brandLogoHtml(b)}
+        <div>
+          <div class="brand-name">${escTxt(b.name)}</div>
+          <div class="brand-tag">${escTxt(b.kurzbeschreibung)}</div>
         </div>
-        <div class="brand-row-actions">
-          ${b.website ? `<a class="link-btn" href="${esc(b.website)}" target="_blank" rel="noopener"
-             onclick="event.stopPropagation()">Website ➜</a>` : ''}
-          <button class="link-btn" onclick="event.stopPropagation();openContact('${b.marken_id}')">Kontakt</button>
-        </div>
-        <div class="brand-row-meta">
-          <span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} ${PROV}</span>
-          <span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
-          <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>
-        </div>
+        <span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} Provision</span>
+        <span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
+        <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>
+        <span class="spacer"></span>
+        ${b.website ? `<a class="link-btn" href="${esc(b.website)}" target="_blank" rel="noopener"
+           onclick="event.stopPropagation()">Website ➜</a>` : ''}
+        <button class="link-btn" onclick="event.stopPropagation();openContact('${b.marken_id}')">✉︎ Kontakt</button>
       </div>
       <div class="brand-strip">${cells}</div>
     </div>`;
@@ -882,18 +597,11 @@ function openBrand(id){
   document.getElementById('mName').textContent = activeBrand.name;
   document.getElementById('mTag').textContent = activeBrand.kurzbeschreibung || '';
   document.getElementById('mMeta').innerHTML = `
-    <span class="meta-chip" data-tip="${esc(TIP.prov)}">${PROV} <b>${provLabel(activeBrand)}</b></span>
+    <span class="meta-chip" data-tip="${esc(TIP.prov)}">Provision <b>${provLabel(activeBrand)}</b></span>
     <span class="meta-chip" data-tip="${esc(TIP.avg)}">Ø Warenkorb <b>${eur(activeBrand.avgCart)}</b></span>
     <span class="meta-chip" data-tip="${esc(TIP.count)}">${activeBrand.productCount} Produkte</span>
-    <div class="modal-actions">
-      ${activeBrand.website ? `<a class="btn btn-ghost" href="${esc(activeBrand.website)}" target="_blank" rel="noopener">Website ➜</a>` : ''}
-      <button class="btn btn-ghost" onclick="openContact('${activeBrand.marken_id}')">Marke kontaktieren</button>
-    </div>`;
-  // Kategorien nach Häufigkeit, auf max. 15 begrenzt
-  const catCount = {};
-  dataProvider.getProducts(id).forEach(p => { if(p.kategorie) catCount[p.kategorie] = (catCount[p.kategorie]||0)+1; });
-  const topCats = Object.keys(catCount).sort((a,b)=>catCount[b]-catCount[a]).slice(0,15);
-  const cats = ['Alle', ...topCats];
+    <button class="btn btn-ghost" onclick="openContact('${activeBrand.marken_id}')">✉︎ Marke kontaktieren</button>`;
+  const cats = ['Alle', ...new Set(dataProvider.getProducts(id).map(p=>p.kategorie).filter(Boolean))];
   document.getElementById('mCats').innerHTML = cats.map((c,i) =>
     `<button class="cat-pill ${i===0?'active':''}" onclick="setCat(this,${JSON.stringify(c).replace(/"/g,'&quot;')})">${escTxt(c)}</button>`).join('');
   renderProducts();
@@ -917,21 +625,20 @@ function renderProducts(){
     const inCart = !!cart[p.produkt_id];
     const marge = marginOf(p);
     const tip = `Pro verkauftem Stück verdienst du ${eur(marge)} — das sind ${p.provision_prozent} % vom UVP (${eur(p.uvp_preis)}).`;
-    return `<div class="prod-card" onclick="openProduct('${p.produkt_id}')">
-      <div class="prod-thumb" data-gidx="0">
-        ${prodGallery(p)}
+    return `<div class="prod-card">
+      <div class="prod-thumb">
+        ${prodImg(p)}
+        ${p.kategorie ? `<span class="prod-cat">${escTxt(p.kategorie)}</span>` : ''}
       </div>
       <div class="prod-info">
         <div class="prod-name">${escTxt(p.produktname)}</div>
-        ${p.beschreibung
-          ? `<div class="prod-desc">${escTxt(p.beschreibung)}</div>`
-          : `<div class="prod-desc prod-desc-ph">${escTxt(CONFIG.descPlaceholder)}</div>`}
+        ${p.beschreibung ? `<div class="prod-desc">${escTxt(p.beschreibung)}</div>` : ''}
         <div class="prod-price">
           <span class="uvp" data-tip="${esc(TIP.uvp)}">${eur(p.uvp_preis)}</span>
           <span class="uvp-l">UVP</span>
         </div>
-        <span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % · ${eur(marge)} Marge</span>
-        <button class="prod-btn ${inCart?'in':''}" onclick="event.stopPropagation();toggleCart('${p.produkt_id}')">
+        <span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % · +${eur(marge)} Marge</span>
+        <button class="prod-btn ${inCart?'in':''}" onclick="toggleCart('${p.produkt_id}')">
           ${inCart?'✓ In Anfrage':'+ Zur Anfrage'}</button>
       </div>
     </div>`;
@@ -939,103 +646,9 @@ function renderProducts(){
 }
 
 /* ============================================================
-   Produktdetail-Popup (drittes Popup beim Klick auf eine Karte)
-   ============================================================ */
-let pdProductId = null;
-function openProduct(id){
-  const p = findProduct(id);
-  if(!p) return;
-  pdProductId = id;
-  const brand = dataProvider.getBrands().find(b => b.marken_id === p.marken_id);
-  const im = productImages(p);
-  // Großes Bild / Karussell
-  const stage = document.getElementById('pdStage');
-  stage.dataset.pdidx = 0;
-  if(im.length){
-    stage.innerHTML = im.map((src,i) =>
-      `<img class="pd-img" src="${esc(cdnResize(src,900))}" alt="" style="display:${i===0?'block':'none'}"
-         onerror="this.style.display='none'">`).join('') +
-      (im.length > 1
-        ? `<button class="g-nav g-prev" onclick="pdNav(-1)" aria-label="Vorheriges Bild">‹</button>
-           <button class="g-nav g-next" onclick="pdNav(1)" aria-label="Nächstes Bild">›</button>`
-        : '');
-  } else {
-    stage.innerHTML = '<span class="pd-ph">📦</span>';
-  }
-  // Thumbnails (nur bei mehreren Bildern)
-  const thumbs = document.getElementById('pdThumbs');
-  thumbs.innerHTML = im.length > 1
-    ? im.map((src,i) => `<button class="pd-thumb-b ${i===0?'on':''}" onclick="pdGo(${i})">
-        <img src="${esc(cdnResize(src,160))}" alt="" onerror="this.style.display='none'"></button>`).join('')
-    : '';
-  // Texte / Preis / Marge
-  const cat = document.getElementById('pdCat');
-  cat.textContent = '';
-  cat.style.display = 'none';
-  document.getElementById('pdName').textContent = p.produktname || '';
-  document.getElementById('pdBrand').textContent = brand ? brand.name : '';
-  const desc = document.getElementById('pdDesc');
-  if(p.beschreibung){ desc.textContent = p.beschreibung; desc.classList.remove('pd-desc-ph'); }
-  else { desc.textContent = CONFIG.descPlaceholder; desc.classList.add('pd-desc-ph'); }
-  document.getElementById('pdPrice').textContent = eur(p.uvp_preis);
-  document.getElementById('pdMargin').innerHTML =
-    `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf</span><span>${p.provision_prozent} % ${PROV}</span>`;
-  pdRenderBtn();
-  document.getElementById('overlay').classList.add('open');
-  document.getElementById('productPopup').classList.add('open');
-}
-function pdRenderBtn(){
-  const btn = document.getElementById('pdAddBtn');
-  const inCart = !!cart[pdProductId];
-  btn.textContent = inCart ? '✓ In Anfrage' : '+ Zur Anfrage';
-  btn.classList.toggle('in', inCart);
-}
-function pdToggleCart(){ if(pdProductId){ toggleCart(pdProductId); pdRenderBtn(); } }
-function pdShow(idx){
-  const stage = document.getElementById('pdStage');
-  const imgs = [...stage.querySelectorAll('.pd-img')];
-  if(!imgs.length) return;
-  if(idx < 0) idx = imgs.length - 1;
-  if(idx >= imgs.length) idx = 0;
-  imgs.forEach((im,i) => im.style.display = i===idx ? 'block':'none');
-  stage.dataset.pdidx = idx;
-  const tb = document.getElementById('pdThumbs');
-  [...tb.children].forEach((b,i) => b.classList.toggle('on', i===idx));
-}
-function pdNav(dir){ const s = document.getElementById('pdStage'); pdShow((parseInt(s.dataset.pdidx)||0) + dir); }
-function pdGo(i){ pdShow(i); }
-function closeProduct(){
-  document.getElementById('productPopup').classList.remove('open');
-  if(!document.getElementById('brandModal').classList.contains('open') &&
-     !document.getElementById('drawer').classList.contains('open'))
-    document.getElementById('overlay').classList.remove('open');
-}
-
-/* ============================================================
    Cart
    ============================================================ */
 function findProduct(id){ return _products.find(p => p.produkt_id === id); }
-
-/* --- Persistenz: Anfrage übersteht Seiten-Reload (localStorage) --- */
-const CART_KEY = 'spreat_brandpool_cart_v1';
-function saveCart(){
-  try {
-    const slim = {}; Object.values(cart).forEach(c => slim[c.product.produkt_id] = c.qty);
-    localStorage.setItem(CART_KEY, JSON.stringify(slim));
-  } catch(_){}
-}
-function loadCart(){
-  try {
-    const raw = localStorage.getItem(CART_KEY); if(!raw) return;
-    const slim = JSON.parse(raw); if(!slim || typeof slim !== 'object') return;
-    Object.entries(slim).forEach(([id,qty]) => {
-      const p = findProduct(id); if(!p) return;             // Produkt evtl. nicht mehr im Pool
-      const brand = dataProvider.getBrands().find(b => b.marken_id === p.marken_id);
-      cart[id] = {product:p, brand, qty:Math.max(0,parseInt(qty)||0)};
-    });
-  } catch(_){}
-}
-
 function toggleCart(id){
   if(cart[id]) delete cart[id];
   else {
@@ -1043,16 +656,15 @@ function toggleCart(id){
     const brand = dataProvider.getBrands().find(b => b.marken_id === p.marken_id);
     cart[id] = {product:p, brand, qty:10};
   }
-  saveCart();
   if(activeBrand) renderProducts();
   updateFab(); renderCart();
 }
-function setQty(id,v){ v=Math.max(0,parseInt(v)||0); if(cart[id])cart[id].qty=v; saveCart(); updateFab(); renderCart(); }
+function setQty(id,v){ v=Math.max(0,parseInt(v)||0); if(cart[id])cart[id].qty=v; updateFab(); renderCart(); }
 function stepQty(id,d){ if(cart[id]) setQty(id, cart[id].qty+d); }
 function setAllQty(){
   const v = Math.max(0, parseInt(document.getElementById('bulkQty').value)||0);
   Object.values(cart).forEach(c => c.qty = v);
-  saveCart(); renderCart(); updateFab();
+  renderCart(); updateFab();
 }
 function cartTotals(){
   let units=0, revenue=0, margin=0;
@@ -1083,7 +695,7 @@ function renderCart(){
   const foot = document.getElementById('drawerFoot');
   const items = Object.values(cart);
   if(!items.length){
-    body.innerHTML = `<div class="cart-empty"><div class="big">${CONFIG.cartIcon}</div>
+    body.innerHTML = `<div class="cart-empty"><div class="big">🛒</div>
       <strong>Noch nichts ausgewählt</strong>
       <p style="font-size:13px;margin-top:6px">Öffne eine Marke und füge Produkte hinzu —
       hier kalkulierst du deine Marge und fragst die Marken anschließend an.</p></div>`;
@@ -1124,7 +736,7 @@ function renderCart(){
     <div class="calc-box">
       <div class="calc-row"><span data-tip="${esc(TIP.units)}">Verkäufe / Monat</span><span>${t.units} Stück</span></div>
       <div class="calc-row"><span data-tip="${esc(TIP.revenue)}">Umsatz / Monat (UVP)</span><span>${eur(t.revenue)}</span></div>
-      <div class="calc-row"><span data-tip="${esc(TIP.avgprov)}">Ø ${PROV}</span><span>${effProv} %</span></div>
+      <div class="calc-row"><span data-tip="${esc(TIP.avgprov)}">Ø Provision</span><span>${effProv} %</span></div>
       <div class="calc-row total"><span data-tip="${esc(TIP.netmargin)}">Deine Netto-Marge / Monat</span>
         <span class="big">${eur(t.margin)}</span></div>
       <div class="calc-row"><span>Hochgerechnet / Jahr</span><span><b>${eur(t.margin*12)}</b></span></div>
@@ -1132,7 +744,7 @@ function renderCart(){
     ${profileStatusLine()}
     <button class="btn btn-primary req-cta" onclick="requestFlow()">
       ✉︎ ${brandCount} ${brandCount===1?'Marke':'Marken'} anfragen</button>
-    <div class="calc-hint">${PROV} je Produkt aus der Datenbank. Netto-Marge = Umsatz × ${PROV}.</div>`;
+    <div class="calc-hint">Provision je Produkt aus der Datenbank. Netto-Marge = Umsatz × Provision.</div>`;
 }
 
 /* ============================================================
@@ -1455,7 +1067,7 @@ function openCart(){
   document.getElementById('drawer').classList.add('open');
 }
 function closeAll(){
-  ['overlay','brandModal','drawer','contactPopup','requestPopup','profilePopup','loginPopup','productPopup']
+  ['overlay','brandModal','drawer','contactPopup','requestPopup','profilePopup','loginPopup']
     .forEach(id => document.getElementById(id).classList.remove('open'));
 }
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeAll(); });
@@ -1486,19 +1098,10 @@ document.addEventListener('mouseover', e => {
 document.addEventListener('mousedown', () => tipEl.classList.remove('show'));
 
 /* ---- Init ---- */
-function applyLabels(){
-  document.getElementById('cartBtn').textContent = CONFIG.cartIcon + ' ' + CONFIG.cartLabel;
-  document.getElementById('drawerTitle').textContent = CONFIG.cartLabel;
-  document.getElementById('drawerSub').textContent = CONFIG.cartSubline;
-  const fi = document.getElementById('fabIcon'); if(fi) fi.textContent = CONFIG.cartIcon;
-  const fy = document.getElementById('footYear'); if(fy) fy.textContent = new Date().getFullYear();
-}
 async function init(){
-  applyLabels();
   renderAuth();
   try {
     await dataProvider.load();
-    loadCart();
     renderBrands();
   } catch(e){
     document.getElementById('brandGrid').innerHTML =
