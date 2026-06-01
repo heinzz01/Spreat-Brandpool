@@ -745,7 +745,7 @@ function renderBrands(){
         <div class="prod-thumb" data-gidx="0">${prodGallery(p)}</div>
         <div class="pname">${escTxt(p.produktname)}</div>
       </div>`).join('') +
-      (rest > 0 ? `<div class="more-tile">${rest}+<br>mehr</div>` : '');
+      `<div class="more-tile">${Math.max(rest,0)}+<br>mehr</div>`;
     return `<div class="brand-row" onclick="openBrand('${b.marken_id}')" onmouseenter="prefetchBrand('${b.marken_id}')">
       <div class="brand-row-head">
         <div class="brand-row-id">
@@ -825,7 +825,6 @@ function renderProducts(){
     return `<div class="prod-card" onclick="openProduct('${p.produkt_id}')">
       <div class="prod-thumb" data-gidx="0">
         ${prodGallery(p)}
-        ${p.kategorie ? `<span class="prod-cat">${escTxt(p.kategorie)}</span>` : ''}
       </div>
       <div class="prod-info">
         <div class="prod-name">${escTxt(p.produktname)}</div>
