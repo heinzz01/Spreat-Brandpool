@@ -17,7 +17,7 @@
     background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
   button{font-family:inherit;cursor:pointer;border:none}
   input,textarea,select{font-family:inherit}
-  [data-tip]{cursor:help}
+  [data-tip]{cursor:pointer}
 
   .tooltip{position:fixed;z-index:200;max-width:262px;background:#16181d;color:#fff;
     font-size:11.5px;line-height:1.5;padding:10px 12px;border-radius:10px;
@@ -47,14 +47,17 @@
   .brand-row{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
     padding:18px 20px;cursor:pointer;transition:box-shadow .12s,border-color .12s}
   .brand-row:hover{box-shadow:var(--shadow);border-color:#d3d6de}
-  .brand-row-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+  .brand-row-head{display:flex;align-items:flex-start;gap:10px 12px;flex-wrap:wrap;margin-bottom:15px}
+  .brand-row-id{display:flex;align-items:center;gap:10px;flex:1 1 auto;min-width:0}
+  .brand-row-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1 1 100%;order:3}
+  .brand-head-text{min-width:0}
   .brand-logo{border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:800;flex-shrink:0;overflow:hidden}
   .brand-logo img{width:100%;height:100%;object-fit:contain;background:#fff}
   .brand-row-head .brand-logo{width:42px;height:42px;font-size:15px}
   .brand-name{font-weight:700;font-size:17px;letter-spacing:-.01em}
   .brand-tag{color:var(--muted);font-size:12.5px}
   .brand-row-head .spacer{flex:1}
-  .brand-row-head .brand-row-actions{display:inline-flex;gap:8px;flex:0 0 auto;flex-wrap:nowrap;margin-left:auto}
+  .brand-row-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-left:auto;order:2}
   .link-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
     border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-size:12.5px;
     font-weight:600;color:var(--text);cursor:pointer;text-decoration:none;
@@ -218,6 +221,47 @@
   .form-err{font-size:12px;color:#dc2626;font-weight:600}
   .popup-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px}
   .popup-foot .btn{flex:1}
+  /* Produkt-Detail-Popup */
+  .popup.pd{width:min(860px,95vw);max-width:860px}
+  .pd-x{position:absolute;top:12px;right:12px;z-index:5;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(16,18,29,.15)}
+  .pd-grid{display:grid;grid-template-columns:1fr 1fr}
+  .pd-media{background:#fff;padding:18px;display:flex;flex-direction:column;gap:12px;border-right:1px solid var(--border)}
+  .pd-stage{position:relative;flex:1;min-height:280px;display:grid;place-items:center;background:#fff;border-radius:12px;overflow:hidden}
+  .pd-stage .pd-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+  .pd-stage .pd-ph{font-size:66px}
+  .pd-stage .g-nav{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;
+    border-radius:50%;background:rgba(255,255,255,.95);box-shadow:0 2px 10px rgba(16,18,29,.2);
+    color:var(--text);font-size:21px;line-height:1;display:grid;place-items:center;z-index:3;padding-bottom:2px;cursor:pointer}
+  .pd-stage .g-prev{left:10px}
+  .pd-stage .g-next{right:10px}
+  .pd-thumbs{display:flex;gap:8px;flex-wrap:wrap}
+  .pd-thumb-b{width:50px;height:50px;border-radius:9px;border:2px solid var(--border);overflow:hidden;background:#fff;padding:0;cursor:pointer}
+  .pd-thumb-b.on{border-color:var(--accent)}
+  .pd-thumb-b img{width:100%;height:100%;object-fit:contain}
+  .pd-info{padding:30px 28px 26px;display:flex;flex-direction:column;gap:10px}
+  .pd-cat{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .pd-name{font-size:23px;letter-spacing:-.02em;line-height:1.2}
+  .pd-brand{font-size:13px;color:var(--muted)}
+  .pd-desc{font-size:13.5px;color:var(--text);line-height:1.55;margin-top:2px}
+  .pd-desc.pd-desc-ph{font-style:italic;opacity:.55}
+  .pd-spacer{flex:1;min-height:10px}
+  .pd-pricebox{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    background:var(--bg);border-radius:12px;padding:15px 17px}
+  .pd-price{display:flex;align-items:baseline;gap:6px;flex-shrink:0;white-space:nowrap}
+  .pd-uvp{font-size:27px;font-weight:800;white-space:nowrap}
+  .pd-uvp-l{font-size:11px;color:var(--muted)}
+  .pd-margin{font-size:12px;color:var(--green);font-weight:600;text-align:right;line-height:1.5}
+  .pd-margin b{font-size:18px;display:block}
+  .pd-margin span{display:block}
+  .pd-add{width:100%;padding:14px;font-size:14px}
+  .pd-add.in{background:var(--green);color:#fff}
+  .prod-card{cursor:pointer}
+  @media(max-width:640px){
+    .popup.pd{width:96vw}
+    .pd-grid{grid-template-columns:1fr}
+    .pd-media{border-right:none;border-bottom:1px solid var(--border)}
+    .pd-info{padding:22px 20px}
+  }
   .ok-state{padding:30px 24px;text-align:center}
   .ok-state .big{font-size:40px;margin-bottom:8px}
   .code-input{width:100%;text-align:center;letter-spacing:.4em;font-size:20px;font-weight:700;
@@ -486,6 +530,29 @@
   </div>
 </div>
 
+<!-- Produkt-Detail-Popup -->
+<div class="popup pd" id="productPopup">
+  <button class="x-close pd-x" onclick="closeProduct()">✕</button>
+  <div class="pd-grid">
+    <div class="pd-media">
+      <div class="pd-stage" id="pdStage" data-pdidx="0"></div>
+      <div class="pd-thumbs" id="pdThumbs"></div>
+    </div>
+    <div class="pd-info">
+      <div class="pd-cat" id="pdCat"></div>
+      <h3 class="pd-name" id="pdName"></h3>
+      <div class="pd-brand" id="pdBrand"></div>
+      <div class="pd-desc" id="pdDesc"></div>
+      <div class="pd-spacer"></div>
+      <div class="pd-pricebox">
+        <div class="pd-price"><span class="pd-uvp" id="pdPrice"></span><span class="pd-uvp-l">UVP</span></div>
+        <div class="pd-margin" id="pdMargin"></div>
+      </div>
+      <button class="btn btn-primary pd-add" id="pdAddBtn" onclick="pdToggleCart()">+ Zur Anfrage</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    SUPABASE — Datenquelle & Login
@@ -531,7 +598,7 @@ const dataProvider = {
 const PALETTE = ['#1c64f2','#0ea5b7','#1f7a3d','#e26a1f','#ff6b35','#d6336c','#7c3aed','#0891b2'];
 function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h;}
 function colorFor(id){ return PALETTE[hash(id) % PALETTE.length]; }
-const eur = n => Math.round(Number(n)||0).toLocaleString('de-DE') + ' €';
+const eur = n => (Number(n)||0).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
 const initials = n => (n||'?').replace(/[^A-Za-zÄÖÜ ]/g,'').trim().split(' ')
   .map(w=>w[0]).slice(0,2).join('').toUpperCase() || '?';
 const esc = s => String(s==null?'':s).replace(/"/g,'&quot;');
@@ -670,20 +737,23 @@ function renderBrands(){
       (rest > 0 ? `<div class="more-tile">${rest}+<br>mehr</div>` : '');
     return `<div class="brand-row" onclick="openBrand('${b.marken_id}')" onmouseenter="prefetchBrand('${b.marken_id}')">
       <div class="brand-row-head">
-        ${brandLogoHtml(b)}
-        <div>
-          <div class="brand-name">${escTxt(b.name)}</div>
-          <div class="brand-tag">${escTxt(b.kurzbeschreibung)}</div>
+        <div class="brand-row-id">
+          ${brandLogoHtml(b)}
+          <div class="brand-head-text">
+            <div class="brand-name">${escTxt(b.name)}</div>
+            <div class="brand-tag">${escTxt(b.kurzbeschreibung)}</div>
+          </div>
         </div>
-        <span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} Provision</span>
-        <span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
-        <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>
-        <span class="spacer"></span>
-        <span class="brand-row-actions">
+        <div class="brand-row-actions">
           ${b.website ? `<a class="link-btn" href="${esc(b.website)}" target="_blank" rel="noopener"
              onclick="event.stopPropagation()">Website ➜</a>` : ''}
           <button class="link-btn" onclick="event.stopPropagation();openContact('${b.marken_id}')">✉︎ Kontakt</button>
-        </span>
+        </div>
+        <div class="brand-row-meta">
+          <span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} Provision</span>
+          <span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
+          <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>
+        </div>
       </div>
       <div class="brand-strip">${cells}</div>
     </div>`;
@@ -737,7 +807,7 @@ function renderProducts(){
     const inCart = !!cart[p.produkt_id];
     const marge = marginOf(p);
     const tip = `Pro verkauftem Stück verdienst du ${eur(marge)} — das sind ${p.provision_prozent} % vom UVP (${eur(p.uvp_preis)}).`;
-    return `<div class="prod-card">
+    return `<div class="prod-card" onclick="openProduct('${p.produkt_id}')">
       <div class="prod-thumb" data-gidx="0">
         ${prodGallery(p)}
         ${p.kategorie ? `<span class="prod-cat">${escTxt(p.kategorie)}</span>` : ''}
@@ -750,11 +820,78 @@ function renderProducts(){
           <span class="uvp-l">UVP</span>
         </div>
         <span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % · +${eur(marge)} Marge</span>
-        <button class="prod-btn ${inCart?'in':''}" onclick="toggleCart('${p.produkt_id}')">
+        <button class="prod-btn ${inCart?'in':''}" onclick="event.stopPropagation();toggleCart('${p.produkt_id}')">
           ${inCart?'✓ In Anfrage':'+ Zur Anfrage'}</button>
       </div>
     </div>`;
   }).join('');
+}
+
+/* ============================================================
+   Produktdetail-Popup
+   ============================================================ */
+let pdProductId = null;
+function openProduct(id){
+  const p = findProduct(id);
+  if(!p) return;
+  pdProductId = id;
+  const brand = dataProvider.getBrands().find(b => b.marken_id === p.marken_id);
+  const im = productImages(p);
+  const stage = document.getElementById('pdStage');
+  stage.dataset.pdidx = 0;
+  if(im.length){
+    stage.innerHTML = im.map((src,i) =>
+      `<img class="pd-img" src="${esc(cdnResize(src,900))}" alt="" style="display:${i===0?'block':'none'}"
+         onerror="this.style.display='none'">`).join('') +
+      (im.length > 1
+        ? `<button class="g-nav g-prev" onclick="pdNav(-1)" aria-label="Vorheriges Bild">‹</button>
+           <button class="g-nav g-next" onclick="pdNav(1)" aria-label="Nächstes Bild">›</button>`
+        : '');
+  } else { stage.innerHTML = '<span class="pd-ph">📦</span>'; }
+  const thumbs = document.getElementById('pdThumbs');
+  thumbs.innerHTML = im.length > 1
+    ? im.map((src,i) => `<button class="pd-thumb-b ${i===0?'on':''}" onclick="pdGo(${i})">
+        <img src="${esc(cdnResize(src,160))}" alt="" onerror="this.style.display='none'"></button>`).join('')
+    : '';
+  const cat = document.getElementById('pdCat');
+  if(p.kategorie){ cat.textContent = p.kategorie; cat.style.display=''; } else { cat.textContent=''; cat.style.display='none'; }
+  document.getElementById('pdName').textContent = p.produktname || '';
+  document.getElementById('pdBrand').textContent = brand ? brand.name : '';
+  const desc = document.getElementById('pdDesc');
+  if(p.beschreibung){ desc.textContent = p.beschreibung; desc.classList.remove('pd-desc-ph'); }
+  else { desc.textContent = 'Produktbeschreibung folgt …'; desc.classList.add('pd-desc-ph'); }
+  document.getElementById('pdPrice').textContent = eur(p.uvp_preis);
+  document.getElementById('pdMargin').innerHTML =
+    `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf</span><span>${p.provision_prozent} % Provision</span>`;
+  pdRenderBtn();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('productPopup').classList.add('open');
+}
+function pdRenderBtn(){
+  const btn = document.getElementById('pdAddBtn');
+  const inCart = !!cart[pdProductId];
+  btn.textContent = inCart ? '✓ In Anfrage' : '+ Zur Anfrage';
+  btn.classList.toggle('in', inCart);
+}
+function pdToggleCart(){ if(pdProductId){ toggleCart(pdProductId); pdRenderBtn(); } }
+function pdShow(idx){
+  const stage = document.getElementById('pdStage');
+  const imgs = [...stage.querySelectorAll('.pd-img')];
+  if(!imgs.length) return;
+  if(idx < 0) idx = imgs.length - 1;
+  if(idx >= imgs.length) idx = 0;
+  imgs.forEach((im,i) => im.style.display = i===idx ? 'block':'none');
+  stage.dataset.pdidx = idx;
+  const tb = document.getElementById('pdThumbs');
+  [...tb.children].forEach((b,i) => b.classList.toggle('on', i===idx));
+}
+function pdNav(dir){ const s = document.getElementById('pdStage'); pdShow((parseInt(s.dataset.pdidx)||0) + dir); }
+function pdGo(i){ pdShow(i); }
+function closeProduct(){
+  document.getElementById('productPopup').classList.remove('open');
+  if(!document.getElementById('brandModal').classList.contains('open') &&
+     !document.getElementById('drawer').classList.contains('open'))
+    document.getElementById('overlay').classList.remove('open');
 }
 
 /* ============================================================
@@ -1179,8 +1316,8 @@ function openCart(){
   document.getElementById('drawer').classList.add('open');
 }
 function closeAll(){
-  ['overlay','brandModal','drawer','contactPopup','requestPopup','profilePopup','loginPopup']
-    .forEach(id => document.getElementById(id).classList.remove('open'));
+  ['overlay','brandModal','drawer','contactPopup','requestPopup','profilePopup','loginPopup','productPopup']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('open'); });
 }
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeAll(); });
 
