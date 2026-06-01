@@ -27,9 +27,15 @@
   .topbar{background:var(--card);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:40}
   .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
   .topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em}
-  .logo .dot{width:26px;height:26px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:#fff;font-size:14px}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:19px;letter-spacing:-.02em}
+  .logo .logo-img{height:24px;width:auto;display:block;filter:brightness(0)}
+  .logo .logo-sub{font-weight:600;color:var(--muted);font-size:14px;letter-spacing:-.01em;padding-left:9px;border-left:1px solid var(--border)}
   .logo small{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:0}
+  .site-foot{max-width:1180px;margin:36px auto 90px;padding:22px 22px 0;border-top:1px solid var(--border);
+    display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+  .site-foot a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent}
+  .site-foot a:hover{color:var(--text);border-bottom-color:var(--border)}
+  .site-foot .sep{opacity:.5}
 
   .hero{padding:34px 0 8px}
   .hero h1{font-size:30px;letter-spacing:-.03em;margin-bottom:8px}
@@ -308,8 +314,8 @@
 <div class="topbar">
   <div class="wrap">
     <div class="logo">
-      <span class="dot">S</span>
-      <span>Spreat Brandpool</span>
+      <img class="logo-img" src="https://cdn.prod.website-files.com/6675b8a846c2cbec25f829cb/6675cb10048c54618b55d8df_Logo_Spreat_SVG_3920px.svg" alt="Spreat">
+      <span class="logo-sub">Brandpool</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
       <span id="authArea" style="display:flex;align-items:center;gap:8px"></span>
@@ -330,13 +336,20 @@
     <div class="search">
       <input type="text" id="brandSearch" placeholder="Marken und Produkte finden …" oninput="renderBrands()">
     </div>
-    <span class="count-note" id="brandCount"></span>
   </div>
 
   <div class="brand-rows" id="brandGrid">
     <div class="state-msg">Lade Marken aus Supabase …</div>
   </div>
 </div>
+
+<footer class="site-foot">
+  <span>© <span id="footYear"></span> Spreat</span>
+  <span class="sep">·</span>
+  <a href="https://www.spreat.com/imprint" target="_blank" rel="noopener">Impressum</a>
+  <span class="sep">·</span>
+  <a href="https://www.spreat.com" target="_blank" rel="noopener">spreat.com</a>
+</footer>
 
 <button class="fab" id="fab" onclick="openCart()">
   🛒 <span id="fabCount">0 Produkte</span>
@@ -723,8 +736,6 @@ function renderBrands(){
     return dataProvider.getProducts(b.marken_id).some(p => (p.produktname||'').toLowerCase().includes(q));
   });
   const grid = document.getElementById('brandGrid');
-  document.getElementById('brandCount').textContent =
-    `${brands.length} Marken · ${_products.length} Produkte`;
   if(!brands.length){ grid.innerHTML='<div class="state-msg">Keine Marken gefunden.</div>'; return; }
   grid.innerHTML = brands.map(b => {
     const prods = dataProvider.getProducts(b.marken_id);
@@ -1362,6 +1373,7 @@ document.addEventListener('mousedown', () => tipEl.classList.remove('show'));
 
 /* ---- Init ---- */
 async function init(){
+  const fy = document.getElementById('footYear'); if(fy) fy.textContent = new Date().getFullYear();
   renderAuth();
   try {
     await dataProvider.load();
