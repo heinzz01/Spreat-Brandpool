@@ -54,6 +54,7 @@
   .brand-name{font-weight:700;font-size:17px;letter-spacing:-.01em}
   .brand-tag{color:var(--muted);font-size:12.5px}
   .brand-row-head .spacer{flex:1}
+  .brand-row-head .brand-row-actions{display:inline-flex;gap:8px;flex:0 0 auto;flex-wrap:nowrap;margin-left:auto}
   .link-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:var(--bg);
     border:1px solid var(--border);border-radius:999px;padding:6px 14px;font-size:12.5px;
     font-weight:600;color:var(--text);cursor:pointer;text-decoration:none;
@@ -481,14 +482,21 @@ let _brands = null, _products = null;
 
 const dataProvider = {
   async load(){
-    const [{data:bd,error:be},{data:pd,error:pe}] = await Promise.all([
-      sb.from('brands').select('*').eq('sichtbar', true).order('position'),
-      sb.from('products').select('*').eq('sichtbar', true).order('produkt_id'),
-    ]);
+    const {data:bd,error:be} = await sb.from('brands').select('*').eq('sichtbar', true).order('position');
     if(be) throw be;
-    if(pe) throw pe;
     _brands = bd || [];
-    _products = (pd || []).map(p => ({...p, uvp_preis: Number(p.uvp_preis)||0,
+    // Produkte paginiert laden — PostgREST liefert max. 1000 Zeilen pro Request,
+    // der Katalog hat tausende. Ohne diese Schleife zeigen spätere Marken "0 Produkte".
+    let all = [], from = 0; const PAGE = 1000;
+    while(true){
+      const {data, error} = await sb.from('products').select('*').eq('sichtbar', true)
+        .order('produkt_id').range(from, from + PAGE - 1);
+      if(error) throw error;
+      all = all.concat(data || []);
+      if(!data || data.length < PAGE) break;
+      from += PAGE;
+    }
+    _products = all.map(p => ({...p, uvp_preis: Number(p.uvp_preis)||0,
       provision_prozent: Number(p.provision_prozent)||0}));
   },
   getBrands(){
@@ -601,9 +609,11 @@ function renderBrands(){
         <span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
         <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>
         <span class="spacer"></span>
-        ${b.website ? `<a class="link-btn" href="${esc(b.website)}" target="_blank" rel="noopener"
-           onclick="event.stopPropagation()">Website ➜</a>` : ''}
-        <button class="link-btn" onclick="event.stopPropagation();openContact('${b.marken_id}')">✉︎ Kontakt</button>
+        <span class="brand-row-actions">
+          ${b.website ? `<a class="link-btn" href="${esc(b.website)}" target="_blank" rel="noopener"
+             onclick="event.stopPropagation()">Website ➜</a>` : ''}
+          <button class="link-btn" onclick="event.stopPropagation();openContact('${b.marken_id}')">✉︎ Kontakt</button>
+        </span>
       </div>
       <div class="brand-strip">${cells}</div>
     </div>`;
