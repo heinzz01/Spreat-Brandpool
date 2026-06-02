@@ -471,8 +471,10 @@
   </div>
   <div id="pfForm">
     <div class="popup-body">
-      <div class="req-intro">Damit die Marken deine Anfrage ernst nehmen, legst du einmalig
-        dein Händler-Profil an. Deine E-Mail-Adresse ist zugleich dein Login.</div>
+      <div class="req-intro">Damit die Marken deine Anfrage ernst nehmen und dir passende Konditionen anbieten können,
+        legst du einmalig dein kostenloses Händler-Profil an. Deine E-Mail-Adresse ist zugleich dein Login —
+        beim nächsten Mal meldest du dich einfach damit an. Je aussagekräftiger dein Profil (Lage, Filialen,
+        Handelsvolumen), desto bessere Provisionen kannst du mit den Marken verhandeln.</div>
       <div class="form-section">
         <div class="form-section-title"><span class="num">1</span>Ansprechpartner</div>
         <div class="field-row">
@@ -488,12 +490,33 @@
         <div class="form-section-title"><span class="num">2</span>Geschäftsprofil & Standort</div>
         <div class="field"><label>Branche / Sortimentsschwerpunkt</label>
           <select id="pfBranch">
-            <option>Spielwaren</option><option>Drogerie & Kosmetik</option>
-            <option>Elektronik</option><option>Lebensmittel & Kiosk</option>
-            <option>Haushalt & Wohnen</option><option>Sport & Freizeit</option><option>Sonstiges</option>
+            <option>Concept Store / Geschenke</option>
+            <option>Drogerie, Kosmetik & Beauty</option>
+            <option>Spielwaren & Kinder</option>
+            <option>Lebensmittel, Feinkost & Kiosk</option>
+            <option>Getränke & Spirituosen</option>
+            <option>Haushalt, Küche & Wohnen</option>
+            <option>Möbel & Einrichtung</option>
+            <option>Mode, Schuhe & Accessoires</option>
+            <option>Schmuck & Uhren</option>
+            <option>Sport, Freizeit & Outdoor</option>
+            <option>Elektronik & Technik</option>
+            <option>Smart Home & Haushaltsgeräte</option>
+            <option>Bau-, Garten- & Heimwerkermarkt</option>
+            <option>Tierbedarf / Zoofachhandel</option>
+            <option>Buch, Schreibwaren & Papeterie</option>
+            <option>Gesundheit, Apotheke & Sanitätshaus</option>
+            <option>Baby & Kind</option>
+            <option>Reformhaus / Bio & Nachhaltigkeit</option>
+            <option>Friseur / Barber / Kosmetikstudio</option>
+            <option>Café, Hotel & Gastronomie</option>
+            <option>Tankstelle / Convenience</option>
+            <option>Souvenir & Tourismus</option>
+            <option>Online-Shop / E-Commerce</option>
+            <option>Sonstiges</option>
           </select></div>
         <div class="field-row">
-          <div class="field"><label>Anzahl Filialen</label><input type="number" id="pfStores" placeholder="1"></div>
+          <div class="field"><label>Anzahl Filialen</label><input type="number" id="pfStores" min="1" value="1" placeholder="1"></div>
           <div class="field"><label>Ø monatliches Handelsvolumen</label>
             <select id="pfVolume">
               <option>unter 5.000 €</option><option>5.000–20.000 €</option>
@@ -634,7 +657,7 @@ function provLabel(b){ return b.provision_min===b.provision_max
   ? b.provision_min+' %' : b.provision_min+'–'+b.provision_max+' %'; }
 
 const TIP = {
-  prov:'Provision = dein Anteil am Verkaufspreis. Bei einem Verkauf behältst du diesen Anteil des Preises als Marge — den Rest erhält die Marke.',
+  prov:'Laden-Provision = der Anteil am Verkaufspreis, den die Marke bereit ist dir als Marge zu überlassen. Das ist ein Richtwert, kein Fixwert: Je besser deine Lage und je höher dein monatliches Handelsvolumen, desto mehr kannst du verlangen und nachverhandeln.',
   count:'Anzahl der Produkte dieser Marke, die du in deine Sortiments-Anfrage aufnehmen kannst.',
   avg:'Durchschnittlicher Verkaufspreis (UVP) über alle Produkte dieser Marke — grobe Orientierung pro Verkauf.',
   uvp:'UVP = unverbindliche Preisempfehlung. Zu diesem Preis verkaufst du das Produkt an deine Endkunden.',
@@ -773,7 +796,7 @@ function renderBrands(){
           <button class="link-btn" onclick="event.stopPropagation();openContact('${b.marken_id}')">✉︎ Kontakt</button>
         </div>
         <div class="brand-row-meta">
-          <span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} Provision</span>
+          <span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} Ø Laden-Provision</span>
           <span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
           <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>
         </div>
@@ -795,7 +818,7 @@ function openBrand(id){
   document.getElementById('mName').textContent = activeBrand.name;
   document.getElementById('mTag').textContent = activeBrand.kurzbeschreibung || '';
   document.getElementById('mMeta').innerHTML = `
-    <span class="meta-chip" data-tip="${esc(TIP.prov)}">Provision <b>${provLabel(activeBrand)}</b></span>
+    <span class="meta-chip" data-tip="${esc(TIP.prov)}">Ø Laden-Provision <b>${provLabel(activeBrand)}</b></span>
     <span class="meta-chip" data-tip="${esc(TIP.avg)}">Ø Warenkorb <b>${eur(activeBrand.avgCart)}</b></span>
     <span class="meta-chip" data-tip="${esc(TIP.count)}">${activeBrand.productCount} Produkte</span>
     <div class="modal-actions">
@@ -1018,7 +1041,7 @@ function renderCart(){
     <div class="calc-box">
       <div class="calc-row"><span data-tip="${esc(TIP.units)}">Verkäufe / Monat</span><span>${t.units} Stück</span></div>
       <div class="calc-row"><span data-tip="${esc(TIP.revenue)}">Umsatz / Monat (UVP)</span><span>${eur(t.revenue)}</span></div>
-      <div class="calc-row"><span data-tip="${esc(TIP.avgprov)}">Ø Provision</span><span>${effProv} %</span></div>
+      <div class="calc-row"><span data-tip="${esc(TIP.avgprov)}">Ø Laden-Provision</span><span>${effProv} %</span></div>
       <div class="calc-row total"><span data-tip="${esc(TIP.netmargin)}">Deine Netto-Marge / Monat</span>
         <span class="big">${eur(t.margin)}</span></div>
       <div class="calc-row"><span>Hochgerechnet / Jahr</span><span><b>${eur(t.margin*12)}</b></span></div>
@@ -1026,7 +1049,7 @@ function renderCart(){
     ${profileStatusLine()}
     <button class="btn btn-primary req-cta" onclick="requestFlow()">
       ✉︎ ${brandCount} ${brandCount===1?'Marke':'Marken'} anfragen</button>
-    <div class="calc-hint">Provision je Produkt aus der Datenbank. Netto-Marge = Umsatz × Provision.</div>`;
+    <div class="calc-hint">⚠︎ Richtwert, noch nicht verbindlich: Die angezeigten Provisionen/Margen sind die von den Marken angegebenen Richtwerte. Deine genaue Marge wird erst im Gespräch mit der jeweiligen Marke final festgelegt — je nach Lage und Handelsvolumen ist mehr verhandelbar.</div>`;
 }
 
 /* ============================================================
