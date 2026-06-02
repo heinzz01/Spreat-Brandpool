@@ -841,11 +841,13 @@ function renderProducts(){
       <div class="prod-info">
         <div class="prod-name">${escTxt(p.produktname)}</div>
         ${p.beschreibung ? `<div class="prod-desc">${escTxt(p.beschreibung)}</div>` : ''}
-        <div class="prod-price">
-          <span class="uvp" data-tip="${esc(TIP.uvp)}">${eur(p.uvp_preis)}</span>
-          <span class="uvp-l">UVP</span>
-        </div>
-        <span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % · +${eur(marge)} Marge</span>
+        ${p.uvp_preis > 0
+          ? `<div class="prod-price">
+               <span class="uvp" data-tip="${esc(TIP.uvp)}">${eur(p.uvp_preis)}</span>
+               <span class="uvp-l">UVP</span>
+             </div>
+             <span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % · +${eur(marge)} Marge</span>`
+          : `<div class="prod-price"><span class="uvp-l">Preis auf Anfrage</span></div>`}
         <button class="prod-btn ${inCart?'in':''}" onclick="event.stopPropagation();toggleCart('${p.produkt_id}')">
           ${inCart?'✓ In Anfrage':'+ Zur Anfrage'}</button>
       </div>
@@ -886,9 +888,14 @@ function openProduct(id){
   const desc = document.getElementById('pdDesc');
   if(p.beschreibung){ desc.textContent = p.beschreibung; desc.classList.remove('pd-desc-ph'); }
   else { desc.textContent = 'Produktbeschreibung folgt …'; desc.classList.add('pd-desc-ph'); }
-  document.getElementById('pdPrice').textContent = eur(p.uvp_preis);
-  document.getElementById('pdMargin').innerHTML =
-    `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf</span><span>${p.provision_prozent} % Provision</span>`;
+  if(p.uvp_preis > 0){
+    document.getElementById('pdPrice').textContent = eur(p.uvp_preis);
+    document.getElementById('pdMargin').innerHTML =
+      `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf</span><span>${p.provision_prozent} % Provision</span>`;
+  } else {
+    document.getElementById('pdPrice').textContent = 'Preis auf Anfrage';
+    document.getElementById('pdMargin').innerHTML = '';
+  }
   pdRenderBtn();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('productPopup').classList.add('open');
