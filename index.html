@@ -308,6 +308,54 @@
   .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
   @media(max-width:560px){.hero h1{font-size:24px}}
+
+  /* ===== MOBILE (≤640px) — Overflow-Fix + spreat.com/brandpool-Look ===== */
+  @media(max-width:640px){
+    html{overflow-x:hidden}
+    body{overflow-x:clip}
+    .wrap{padding:0 14px}
+
+    /* Topbar: kompakt, redundanten Warenkorb-Button ausblenden (FAB unten übernimmt) */
+    .topbar{padding:11px 0}
+    .topbar .wrap{gap:8px}
+    .logo{font-size:16px;gap:6px}
+    .logo .logo-img{height:20px}
+    .logo .logo-sub{font-size:12px;padding-left:7px}
+    .topbar .btn-ghost{display:none}
+    #authArea{gap:6px}
+    #authArea .link-btn{min-width:0;height:30px;padding:6px 11px;font-size:12px}
+
+    /* Hero + Toolbar enger */
+    .hero{padding:18px 0 2px}
+    .hero h1{font-size:22px;line-height:1.18}
+    .hero p{font-size:13px}
+    .toolbar{margin:14px 0 2px}
+    .brand-rows{gap:12px;padding:12px 0 96px}
+
+    /* Marken-Karte */
+    .brand-row{padding:14px}
+    .brand-row-head{margin-bottom:12px;gap:8px}
+    .brand-row-id{flex:1 1 100%}
+    .brand-row-head .brand-logo{width:38px;height:38px;font-size:14px}
+    .brand-name{font-size:15.5px}
+    .brand-tag{font-size:12px;max-width:none}
+    .brand-row-actions{flex:1 1 100%;margin-left:0;order:3}
+    .brand-row-actions .link-btn{flex:1 1 0;min-width:0}
+    .brand-row-meta{order:2;gap:6px}
+    .prov-badge,.meta-pill{font-size:11.5px}
+
+    /* Produkte: horizontal swipebares Karussell, randlos */
+    .brand-strip{display:flex;grid-template-columns:none;gap:10px;
+      overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+      scrollbar-width:none;margin:0 -14px;padding:2px 14px 4px}
+    .brand-strip::-webkit-scrollbar{display:none}
+    .brand-strip>.brand-prod{flex:0 0 39%;scroll-snap-align:start}
+    .brand-strip>.more-tile{flex:0 0 30%;align-self:stretch}
+    .brand-prod .pname{font-size:11px}
+
+    /* FAB etwas kompakter */
+    .fab{right:14px;bottom:16px;padding:12px 16px;font-size:13.5px}
+  }
 </style>
 </head>
 <body>
