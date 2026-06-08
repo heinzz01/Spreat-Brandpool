@@ -430,6 +430,18 @@
     .filter-mobilebtn .fb-badge{background:var(--accent);color:#fff;border-radius:999px;font-size:11px;
       min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;flex:0 0 auto}
   }
+
+  /* Unterkategorie-Chips heben sich von Branche-Chips ab */
+  .filter-row.subs{align-items:center;gap:7px;padding:8px 11px;background:var(--accent-soft);border-radius:12px;margin-top:1px}
+  .subs-label{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);opacity:.75;margin-right:3px;white-space:nowrap}
+  .subchip{display:inline-flex;align-items:center;padding:5px 11px;border-radius:7px;border:1px dashed #b9bdf0;
+    background:#fff;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.12s}
+  .subchip:hover{border-style:solid;background:#fbfbff}
+  .subchip.active{background:var(--accent);border-color:var(--accent);border-style:solid;color:#fff}
+  @media(max-width:640px){
+    body.shopview .fab{z-index:60}
+    body.shopview .modal-body{padding-bottom:84px}
+  }
 </style>
 </head>
 <body>
@@ -897,35 +909,40 @@ function prefetchBrand(id){
 const HAUPT_ORDER = ['Bücher','Filme, Serien, Musik & Games','Elektronik & Computer','Home, Garden & DIY','Kosmetik, Drogerie & Lebensmittel','Spielzeug & Baby','Kleidung, Schuhe & Uhren','Sport & Freizeit','Auto, Motorrad & Gewerbe','Sonstiges'];
 let FILTER = {haupt:null, unter:null};
 let TAXO = [];
+let BRANDCATS = {};
 let lastFilterCount = 0;
 const jsq = s => String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+const HUSEP = '';
 function buildTaxo(){
-  const map = {};
-  (_brands||[]).forEach(b => {
-    const h=b.kategorie_haupt; if(!h) return;
-    const u=b.kategorie_unter||'–';
-    (map[h]=map[h]||{total:0,subs:{}});
-    map[h].total++; map[h].subs[u]=(map[h].subs[u]||0)+1;
+  const subs = {}; BRANDCATS = {};
+  (_products||[]).forEach(p => {
+    const h = p.kategorie_haupt; if(!h) return;
+    const u = p.kategorie_unter || '–';
+    (subs[h] = subs[h] || new Set()).add(u);
+    const bc = (BRANDCATS[p.marken_id] = BRANDCATS[p.marken_id] || {h:new Set(), hu:new Set()});
+    bc.h.add(h); bc.hu.add(h+HUSEP+u);
   });
-  const keys=Object.keys(map).sort((a,b)=>{
-    const ia=HAUPT_ORDER.indexOf(a), ib=HAUPT_ORDER.indexOf(b);
-    return (ia<0?99:ia)-(ib<0?99:ib);
-  });
-  TAXO=keys.map(h=>({haupt:h,total:map[h].total,
-    subs:Object.entries(map[h].subs).map(([u,n])=>({unter:u,n})).sort((a,b)=>b.n-a.n||a.unter.localeCompare(b.unter,'de'))}));
+  const keys = Object.keys(subs).sort((a,b)=>{ const ia=HAUPT_ORDER.indexOf(a),ib=HAUPT_ORDER.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); });
+  TAXO = keys.map(h=>({haupt:h, subs:[...subs[h]].sort((a,b)=>a.localeCompare(b,'de'))}));
 }
-function brandsTotal(){ return (_brands||[]).filter(b=>b.kategorie_haupt).length; }
+function brandPasses(id){
+  if(!FILTER.haupt) return true;
+  const bc = BRANDCATS[id]; if(!bc) return false;
+  if(!bc.h.has(FILTER.haupt)) return false;
+  if(FILTER.unter && !bc.hu.has(FILTER.haupt+HUSEP+FILTER.unter)) return false;
+  return true;
+}
 function renderFilterBar(){
   const bar=document.getElementById('filterbar'); if(!bar) return;
-  let r1=`<div class="filter-row"><button class="fchip ${!FILTER.haupt?'active':''}" onclick="setHaupt(null)">Alle Marken <span class="n">${brandsTotal()}</span></button>`;
-  TAXO.forEach(t=>{ r1+=`<button class="fchip ${FILTER.haupt===t.haupt?'active':''}" onclick="setHaupt('${jsq(t.haupt)}')">${escTxt(t.haupt)} <span class="n">${t.total}</span></button>`; });
-  r1+=`<span class="filter-count" id="filterCount"></span></div>`;
+  let r1=`<div class="filter-row"><button class="fchip ${!FILTER.haupt?'active':''}" onclick="setHaupt(null)">Alle Marken</button>`;
+  TAXO.forEach(t=>{ r1+=`<button class="fchip ${FILTER.haupt===t.haupt?'active':''}" onclick="setHaupt('${jsq(t.haupt)}')">${escTxt(t.haupt)}</button>`; });
+  r1+=`</div>`;
   let r2='';
   if(FILTER.haupt){
     const t=TAXO.find(x=>x.haupt===FILTER.haupt);
     if(t){
-      r2=`<div class="filter-row subs"><button class="fchip sub ${!FILTER.unter?'active':''}" onclick="setUnter(null)">Alle</button>`;
-      t.subs.forEach(s=>{ r2+=`<button class="fchip sub ${FILTER.unter===s.unter?'active':''}" onclick="setUnter('${jsq(s.unter)}')">${escTxt(s.unter)} <span class="n">${s.n}</span></button>`; });
+      r2=`<div class="filter-row subs"><span class="subs-label">in ${escTxt(FILTER.haupt)}</span><button class="subchip ${!FILTER.unter?'active':''}" onclick="setUnter(null)">Alle</button>`;
+      t.subs.forEach(s=>{ r2+=`<button class="subchip ${FILTER.unter===s?'active':''}" onclick="setUnter('${jsq(s)}')">${escTxt(s)}</button>`; });
       r2+=`<button class="filter-reset" onclick="resetFilter()">Zurücksetzen</button></div>`;
     }
   }
@@ -942,32 +959,30 @@ function setUnter(u){ FILTER.unter=u; renderFilterBar(); renderBrands(); }
 function resetFilter(){ FILTER={haupt:null,unter:null}; renderFilterBar(); renderFilterSheet(); renderBrands(); }
 function renderFilterSheet(){
   const body=document.getElementById('filterSheetBody'); if(!body) return;
-  let h=`<div class="fs-item ${!FILTER.haupt?'open':''}"><button class="fs-haupt ${!FILTER.haupt?'sel':''}" onclick="setHaupt(null);renderFilterSheet();updateApplyBtn()">Alle Marken <span class="n">${brandsTotal()}</span></button></div>`;
+  let h=`<div class="fs-item ${!FILTER.haupt?'open':''}"><button class="fs-haupt ${!FILTER.haupt?'sel':''}" onclick="setHaupt(null);renderFilterSheet()">Alle Marken</button></div>`;
   TAXO.forEach(t=>{
     const open=FILTER.haupt===t.haupt;
-    h+=`<div class="fs-item ${open?'open':''}"><button class="fs-haupt ${open?'sel':''}" onclick="toggleSheetHaupt('${jsq(t.haupt)}')"><span class="chev">›</span>${escTxt(t.haupt)} <span class="n">${t.total}</span></button><div class="fs-subs"><button class="fs-sub ${open&&!FILTER.unter?'sel':''}" onclick="pickSheetSub('${jsq(t.haupt)}',null)">Alle in ${escTxt(t.haupt)}</button>${t.subs.map(s=>`<button class="fs-sub ${FILTER.haupt===t.haupt&&FILTER.unter===s.unter?'sel':''}" onclick="pickSheetSub('${jsq(t.haupt)}','${jsq(s.unter)}')">${escTxt(s.unter)} <span class="n">${s.n}</span></button>`).join('')}</div></div>`;
+    h+=`<div class="fs-item ${open?'open':''}"><button class="fs-haupt ${open?'sel':''}" onclick="toggleSheetHaupt('${jsq(t.haupt)}')"><span class="chev">›</span>${escTxt(t.haupt)}</button><div class="fs-subs"><button class="fs-sub ${open&&!FILTER.unter?'sel':''}" onclick="pickSheetSub('${jsq(t.haupt)}',null)">Alle in ${escTxt(t.haupt)}</button>${t.subs.map(s=>`<button class="fs-sub ${FILTER.haupt===t.haupt&&FILTER.unter===s?'sel':''}" onclick="pickSheetSub('${jsq(t.haupt)}','${jsq(s)}')">${escTxt(s)}</button>`).join('')}</div></div>`;
   });
   body.innerHTML=h;
 }
-function toggleSheetHaupt(hp){ if(FILTER.haupt===hp){ FILTER.haupt=null; FILTER.unter=null; } else { FILTER.haupt=hp; FILTER.unter=null; } renderFilterBar(); renderFilterSheet(); renderBrands(); updateApplyBtn(); }
-function pickSheetSub(hp,u){ FILTER.haupt=hp; FILTER.unter=u; renderFilterBar(); renderFilterSheet(); renderBrands(); updateApplyBtn(); }
-function openFilterSheet(){ renderFilterSheet(); updateApplyBtn(); document.getElementById('filterSheetOv').classList.add('open'); document.getElementById('filterSheet').classList.add('open'); }
+function toggleSheetHaupt(hp){ if(FILTER.haupt===hp){ FILTER.haupt=null; FILTER.unter=null; } else { FILTER.haupt=hp; FILTER.unter=null; } renderFilterBar(); renderFilterSheet(); renderBrands(); }
+function pickSheetSub(hp,u){ FILTER.haupt=hp; FILTER.unter=u; renderFilterBar(); renderFilterSheet(); renderBrands(); }
+function openFilterSheet(){ renderFilterSheet(); document.getElementById('filterSheetOv').classList.add('open'); document.getElementById('filterSheet').classList.add('open'); }
 function closeFilterSheet(){ document.getElementById('filterSheetOv').classList.remove('open'); document.getElementById('filterSheet').classList.remove('open'); }
-function updateApplyBtn(){ const b=document.getElementById('fsApplyBtn'); if(b) b.textContent='Anzeigen ('+lastFilterCount+')'; }
+function updateApplyBtn(){ const b=document.getElementById('fsApplyBtn'); if(b) b.textContent='Anzeigen'; }
 
 function renderBrands(){
   if(!_brands){ return; }
   const q = (document.getElementById('brandSearch').value||'').toLowerCase().trim();
   const brands = dataProvider.getBrands().filter(b => {
-    if(FILTER.haupt && b.kategorie_haupt !== FILTER.haupt) return false;
-    if(FILTER.unter && b.kategorie_unter !== FILTER.unter) return false;
+    if(!brandPasses(b.marken_id)) return false;
     if(!q) return true;
     if(b.name.toLowerCase().includes(q)) return true;
     if((b.kurzbeschreibung||'').toLowerCase().includes(q)) return true;
     return dataProvider.getProducts(b.marken_id).some(p => (p.produktname||'').toLowerCase().includes(q));
   });
   lastFilterCount = brands.length;
-  const _fc = document.getElementById('filterCount'); if(_fc) _fc.textContent = brands.length + (brands.length===1?' Marke':' Marken');
   if(typeof updateApplyBtn==='function') updateApplyBtn();
   const grid = document.getElementById('brandGrid');
   if(!brands.length){ grid.innerHTML='<div class="state-msg">Keine Marken gefunden.</div>'; return; }
@@ -1045,6 +1060,7 @@ function openBrand(id){
   renderProducts();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('brandModal').classList.add('open');
+  document.body.classList.add('shopview');
 }
 function scrollCats(dir){
   const c = document.getElementById('mCats');
@@ -1584,6 +1600,7 @@ function openCart(){
 function closeAll(){
   ['overlay','brandModal','drawer','contactPopup','requestPopup','profilePopup','loginPopup','productPopup']
     .forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('open'); });
+  document.body.classList.remove('shopview');
 }
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeAll(); });
 
