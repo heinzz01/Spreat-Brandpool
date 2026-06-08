@@ -1049,6 +1049,7 @@ function openBrand(id){
     <div class="modal-actions">
       ${activeBrand.website ? `<a class="btn btn-ghost" href="${esc(activeBrand.website)}" target="_blank" rel="noopener">Website ➜</a>` : ''}
       <button class="btn btn-ghost" onclick="openContact('${activeBrand.marken_id}')">✉︎ Marke kontaktieren</button>
+      <button class="btn btn-ghost" onclick="copyShareLink(event)">🔗 Link kopieren</button>
     </div>`;
   // Kategorien nach Häufigkeit, auf max. 15 begrenzt
   const _catCount = {};
@@ -1061,6 +1062,7 @@ function openBrand(id){
   document.getElementById('overlay').classList.add('open');
   document.getElementById('brandModal').classList.add('open');
   document.body.classList.add('shopview');
+  { const want='?marke='+encodeURIComponent(id); if(location.search!==want) history.pushState({marke:id},'',want); }
 }
 function scrollCats(dir){
   const c = document.getElementById('mCats');
@@ -1597,11 +1599,24 @@ function openCart(){
   document.getElementById('overlay').classList.add('open');
   document.getElementById('drawer').classList.add('open');
 }
-function closeAll(){
+function closeAll(fromPop){
   ['overlay','brandModal','drawer','contactPopup','requestPopup','profilePopup','loginPopup','productPopup']
     .forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('open'); });
   document.body.classList.remove('shopview');
+  if(!fromPop && new URLSearchParams(location.search).get('marke')) history.pushState({},'',location.pathname);
 }
+function copyShareLink(ev){
+  if(!activeBrand) return;
+  const url = location.origin + location.pathname + '?marke=' + encodeURIComponent(activeBrand.marken_id);
+  if(navigator.clipboard) navigator.clipboard.writeText(url).catch(()=>{});
+  const b = ev && ev.currentTarget;
+  if(b){ const t=b.textContent; b.textContent='Link kopiert ✓'; setTimeout(()=>{b.textContent=t;},1500); }
+}
+window.addEventListener('popstate', () => {
+  const m = new URLSearchParams(location.search).get('marke');
+  if(m && _brands && dataProvider.getBrands().some(b=>b.marken_id===m)) openBrand(m);
+  else closeAll(true);
+});
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeAll(); });
 
 /* ---- Tooltip-Engine ---- */
@@ -1638,6 +1653,7 @@ async function init(){
     buildTaxo();
     renderFilterBar();
     renderBrands();
+    { const m=new URLSearchParams(location.search).get('marke'); if(m && dataProvider.getBrands().some(b=>b.marken_id===m)) openBrand(m); }
   } catch(e){
     document.getElementById('brandGrid').innerHTML =
       '<div class="state-msg">Daten konnten nicht geladen werden: ' + escTxt(e.message||e) + '</div>';
