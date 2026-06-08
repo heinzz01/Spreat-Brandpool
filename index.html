@@ -1142,7 +1142,7 @@ function openProduct(id){
   if(p.uvp_preis > 0){
     document.getElementById('pdPrice').textContent = eur(p.uvp_preis);
     document.getElementById('pdMargin').innerHTML =
-      `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf = ${p.provision_prozent} % Provision</span>`;
+      `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf</span><span>= ${p.provision_prozent} % Provision</span>`;
   } else {
     document.getElementById('pdPrice').textContent = 'Preis auf Anfrage';
     document.getElementById('pdMargin').innerHTML = '';
