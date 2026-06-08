@@ -442,6 +442,11 @@
     body.shopview .fab{z-index:60}
     body.shopview .modal-body{padding-bottom:84px}
   }
+  .modal-head-icons{margin-left:auto;display:flex;align-items:center;gap:6px}
+  .modal-head-icons .x-close{margin-left:0}
+  .share-ic{color:var(--muted)}
+  .share-ic:hover{color:var(--text)}
+  .share-ic.copied{color:var(--accent);background:var(--accent-soft)}
 </style>
 </head>
 <body>
@@ -523,7 +528,10 @@
         <h2 id="mName"></h2>
         <p id="mTag"></p>
       </div>
-      <button class="x-close" onclick="closeAll()">✕</button>
+      <div class="modal-head-icons">
+        <button class="x-close share-ic" onclick="copyShareLink(event)" data-tip="Link zu dieser Marke kopieren" aria-label="Link kopieren"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button>
+        <button class="x-close" onclick="closeAll()">✕</button>
+      </div>
     </div>
     <div class="modal-meta" id="mMeta"></div>
   </div>
@@ -1049,7 +1057,6 @@ function openBrand(id){
     <div class="modal-actions">
       ${activeBrand.website ? `<a class="btn btn-ghost" href="${esc(activeBrand.website)}" target="_blank" rel="noopener">Website ➜</a>` : ''}
       <button class="btn btn-ghost" onclick="openContact('${activeBrand.marken_id}')">✉︎ Marke kontaktieren</button>
-      <button class="btn btn-ghost" onclick="copyShareLink(event)">🔗 Link kopieren</button>
     </div>`;
   // Kategorien nach Häufigkeit, auf max. 15 begrenzt
   const _catCount = {};
@@ -1610,7 +1617,7 @@ function copyShareLink(ev){
   const url = location.origin + location.pathname + '?marke=' + encodeURIComponent(activeBrand.marken_id);
   if(navigator.clipboard) navigator.clipboard.writeText(url).catch(()=>{});
   const b = ev && ev.currentTarget;
-  if(b){ const t=b.textContent; b.textContent='Link kopiert ✓'; setTimeout(()=>{b.textContent=t;},1500); }
+  if(b){ const t=b.innerHTML; b.innerHTML='✓'; b.classList.add('copied'); setTimeout(()=>{b.innerHTML=t;b.classList.remove('copied');},1300); }
 }
 window.addEventListener('popstate', () => {
   const m = new URLSearchParams(location.search).get('marke');
