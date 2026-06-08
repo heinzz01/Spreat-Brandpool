@@ -377,6 +377,59 @@
     /* FAB etwas kompakter */
     .fab{right:14px;bottom:16px;padding:12px 16px;font-size:13.5px}
   }
+
+  /* ===== Branchen-Filter ===== */
+  .filterwrap{margin:14px 0 2px}
+  .filterbar{display:flex;flex-direction:column;gap:9px}
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .fchip{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;
+    border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;
+    font-weight:600;cursor:pointer;white-space:nowrap;transition:.12s;line-height:1}
+  .fchip:hover{border-color:#c7cbd4;background:#fafbfc}
+  .fchip .n{color:var(--muted);font-weight:600;font-size:11.5px}
+  .fchip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .fchip.active .n{color:#dfe1fb}
+  .fchip.sub{font-size:12.5px;padding:6px 12px}
+  .fchip.sub.active{background:var(--text);border-color:var(--text);color:#fff}
+  .fchip.sub.active .n{color:#cfd2da}
+  .filter-count{margin-left:auto;color:var(--muted);font-size:12.5px;font-weight:600;white-space:nowrap}
+  .filter-reset{background:none;border:none;color:var(--accent);font-size:12.5px;font-weight:600;cursor:pointer;padding:6px 4px}
+  .filter-mobilebtn{display:none}
+  .filtersheet-ov{position:fixed;inset:0;background:rgba(16,18,29,.45);z-index:58;display:none}
+  .filtersheet-ov.open{display:block}
+  .filtersheet{position:fixed;left:0;right:0;bottom:0;z-index:59;background:var(--card);
+    border-radius:18px 18px 0 0;max-height:84vh;display:flex;flex-direction:column;
+    transform:translateY(100%);transition:transform .26s ease;box-shadow:0 -10px 40px rgba(16,18,29,.25)}
+  .filtersheet.open{transform:translateY(0)}
+  .filtersheet-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+  .filtersheet-head h3{font-size:16px;margin:0}
+  .filtersheet-body{overflow-y:auto;padding:4px 0}
+  .fs-item{border-bottom:1px solid var(--border)}
+  .fs-haupt{display:flex;align-items:center;gap:9px;width:100%;padding:14px 18px;background:none;border:none;
+    font-size:15px;font-weight:600;color:var(--text);text-align:left;cursor:pointer}
+  .fs-haupt .n{color:var(--muted);font-weight:600;font-size:12px;margin-left:auto}
+  .fs-haupt .chev{transition:transform .2s;color:var(--muted);display:inline-block}
+  .fs-item.open .fs-haupt .chev{transform:rotate(90deg)}
+  .fs-haupt.sel{color:var(--accent)}
+  .fs-subs{display:none}
+  .fs-item.open .fs-subs{display:block;padding-bottom:8px}
+  .fs-sub{display:flex;align-items:center;gap:8px;width:100%;padding:10px 18px 10px 42px;background:none;border:none;
+    font-size:14px;color:var(--text);text-align:left;cursor:pointer}
+  .fs-sub .n{color:var(--muted);font-size:12px;margin-left:auto}
+  .fs-sub.sel{color:var(--accent);font-weight:600}
+  .filtersheet-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:10px}
+  .filtersheet-foot .btn{flex:1;text-align:center}
+
+  @media(max-width:640px){
+    .filterbar .filter-row{display:none}
+    .filter-mobilebtn{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;
+      padding:11px 14px;border:1px solid var(--border);border-radius:10px;background:var(--card);
+      font-size:14px;font-weight:600;color:var(--text);cursor:pointer}
+    .filter-mobilebtn .fb-left{display:flex;align-items:center;gap:9px;min-width:0;overflow:hidden}
+    .filter-mobilebtn .fb-val{color:var(--muted);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .filter-mobilebtn .fb-badge{background:var(--accent);color:#fff;border-radius:999px;font-size:11px;
+      min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;flex:0 0 auto}
+  }
 </style>
 </head>
 <body>
@@ -408,8 +461,28 @@
     </div>
   </div>
 
+  <div class="filterwrap">
+    <div class="filterbar" id="filterbar"></div>
+    <button class="filter-mobilebtn" id="filterMobileBtn" onclick="openFilterSheet()">
+      <span class="fb-left">&#9776;&nbsp; Branche filtern <span class="fb-val" id="fbVal">Alle Marken</span></span>
+      <span class="fb-badge" id="fbBadge" style="display:none">1</span>
+    </button>
+  </div>
   <div class="brand-rows" id="brandGrid">
     <div class="state-msg">Lade Marken aus Supabase …</div>
+  </div>
+</div>
+
+<div class="filtersheet-ov" id="filterSheetOv" onclick="closeFilterSheet()"></div>
+<div class="filtersheet" id="filterSheet">
+  <div class="filtersheet-head">
+    <h3>Nach Branche filtern</h3>
+    <button class="x-close" style="margin-left:auto" onclick="closeFilterSheet()">&#10005;</button>
+  </div>
+  <div class="filtersheet-body" id="filterSheetBody"></div>
+  <div class="filtersheet-foot">
+    <button class="btn btn-ghost" onclick="resetFilter();closeFilterSheet()">Zur&uuml;cksetzen</button>
+    <button class="btn btn-primary" id="fsApplyBtn" onclick="closeFilterSheet()">Anzeigen</button>
   </div>
 </div>
 
@@ -818,15 +891,84 @@ function prefetchBrand(id){
     if(p.bild_url){ const i = new Image(); i.src = p.bild_url; }
   }
 }
+/* ============================================================
+   Branchen-Filter (2-stufig)
+   ============================================================ */
+const HAUPT_ORDER = ['Bücher','Filme, Serien, Musik & Games','Elektronik & Computer','Home, Garden & DIY','Kosmetik, Drogerie & Lebensmittel','Spielzeug & Baby','Kleidung, Schuhe & Uhren','Sport & Freizeit','Auto, Motorrad & Gewerbe','Sonstiges'];
+let FILTER = {haupt:null, unter:null};
+let TAXO = [];
+let lastFilterCount = 0;
+const jsq = s => String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+function buildTaxo(){
+  const map = {};
+  (_brands||[]).forEach(b => {
+    const h=b.kategorie_haupt; if(!h) return;
+    const u=b.kategorie_unter||'–';
+    (map[h]=map[h]||{total:0,subs:{}});
+    map[h].total++; map[h].subs[u]=(map[h].subs[u]||0)+1;
+  });
+  const keys=Object.keys(map).sort((a,b)=>{
+    const ia=HAUPT_ORDER.indexOf(a), ib=HAUPT_ORDER.indexOf(b);
+    return (ia<0?99:ia)-(ib<0?99:ib);
+  });
+  TAXO=keys.map(h=>({haupt:h,total:map[h].total,
+    subs:Object.entries(map[h].subs).map(([u,n])=>({unter:u,n})).sort((a,b)=>b.n-a.n||a.unter.localeCompare(b.unter,'de'))}));
+}
+function brandsTotal(){ return (_brands||[]).filter(b=>b.kategorie_haupt).length; }
+function renderFilterBar(){
+  const bar=document.getElementById('filterbar'); if(!bar) return;
+  let r1=`<div class="filter-row"><button class="fchip ${!FILTER.haupt?'active':''}" onclick="setHaupt(null)">Alle Marken <span class="n">${brandsTotal()}</span></button>`;
+  TAXO.forEach(t=>{ r1+=`<button class="fchip ${FILTER.haupt===t.haupt?'active':''}" onclick="setHaupt('${jsq(t.haupt)}')">${escTxt(t.haupt)} <span class="n">${t.total}</span></button>`; });
+  r1+=`<span class="filter-count" id="filterCount"></span></div>`;
+  let r2='';
+  if(FILTER.haupt){
+    const t=TAXO.find(x=>x.haupt===FILTER.haupt);
+    if(t){
+      r2=`<div class="filter-row subs"><button class="fchip sub ${!FILTER.unter?'active':''}" onclick="setUnter(null)">Alle</button>`;
+      t.subs.forEach(s=>{ r2+=`<button class="fchip sub ${FILTER.unter===s.unter?'active':''}" onclick="setUnter('${jsq(s.unter)}')">${escTxt(s.unter)} <span class="n">${s.n}</span></button>`; });
+      r2+=`<button class="filter-reset" onclick="resetFilter()">Zurücksetzen</button></div>`;
+    }
+  }
+  bar.innerHTML=r1+r2;
+  renderMobileBtn();
+}
+function renderMobileBtn(){
+  const val=document.getElementById('fbVal'), badge=document.getElementById('fbBadge'); if(!val) return;
+  if(FILTER.haupt){ val.textContent=FILTER.unter?FILTER.haupt+' › '+FILTER.unter:FILTER.haupt; badge.style.display=''; badge.textContent=FILTER.unter?'2':'1'; }
+  else { val.textContent='Alle Marken'; badge.style.display='none'; }
+}
+function setHaupt(h){ FILTER.haupt=h; FILTER.unter=null; renderFilterBar(); renderBrands(); }
+function setUnter(u){ FILTER.unter=u; renderFilterBar(); renderBrands(); }
+function resetFilter(){ FILTER={haupt:null,unter:null}; renderFilterBar(); renderFilterSheet(); renderBrands(); }
+function renderFilterSheet(){
+  const body=document.getElementById('filterSheetBody'); if(!body) return;
+  let h=`<div class="fs-item ${!FILTER.haupt?'open':''}"><button class="fs-haupt ${!FILTER.haupt?'sel':''}" onclick="setHaupt(null);renderFilterSheet();updateApplyBtn()">Alle Marken <span class="n">${brandsTotal()}</span></button></div>`;
+  TAXO.forEach(t=>{
+    const open=FILTER.haupt===t.haupt;
+    h+=`<div class="fs-item ${open?'open':''}"><button class="fs-haupt ${open?'sel':''}" onclick="toggleSheetHaupt('${jsq(t.haupt)}')"><span class="chev">›</span>${escTxt(t.haupt)} <span class="n">${t.total}</span></button><div class="fs-subs"><button class="fs-sub ${open&&!FILTER.unter?'sel':''}" onclick="pickSheetSub('${jsq(t.haupt)}',null)">Alle in ${escTxt(t.haupt)}</button>${t.subs.map(s=>`<button class="fs-sub ${FILTER.haupt===t.haupt&&FILTER.unter===s.unter?'sel':''}" onclick="pickSheetSub('${jsq(t.haupt)}','${jsq(s.unter)}')">${escTxt(s.unter)} <span class="n">${s.n}</span></button>`).join('')}</div></div>`;
+  });
+  body.innerHTML=h;
+}
+function toggleSheetHaupt(hp){ if(FILTER.haupt===hp){ FILTER.haupt=null; FILTER.unter=null; } else { FILTER.haupt=hp; FILTER.unter=null; } renderFilterBar(); renderFilterSheet(); renderBrands(); updateApplyBtn(); }
+function pickSheetSub(hp,u){ FILTER.haupt=hp; FILTER.unter=u; renderFilterBar(); renderFilterSheet(); renderBrands(); updateApplyBtn(); }
+function openFilterSheet(){ renderFilterSheet(); updateApplyBtn(); document.getElementById('filterSheetOv').classList.add('open'); document.getElementById('filterSheet').classList.add('open'); }
+function closeFilterSheet(){ document.getElementById('filterSheetOv').classList.remove('open'); document.getElementById('filterSheet').classList.remove('open'); }
+function updateApplyBtn(){ const b=document.getElementById('fsApplyBtn'); if(b) b.textContent='Anzeigen ('+lastFilterCount+')'; }
+
 function renderBrands(){
   if(!_brands){ return; }
   const q = (document.getElementById('brandSearch').value||'').toLowerCase().trim();
   const brands = dataProvider.getBrands().filter(b => {
+    if(FILTER.haupt && b.kategorie_haupt !== FILTER.haupt) return false;
+    if(FILTER.unter && b.kategorie_unter !== FILTER.unter) return false;
     if(!q) return true;
     if(b.name.toLowerCase().includes(q)) return true;
     if((b.kurzbeschreibung||'').toLowerCase().includes(q)) return true;
     return dataProvider.getProducts(b.marken_id).some(p => (p.produktname||'').toLowerCase().includes(q));
   });
+  lastFilterCount = brands.length;
+  const _fc = document.getElementById('filterCount'); if(_fc) _fc.textContent = brands.length + (brands.length===1?' Marke':' Marken');
+  if(typeof updateApplyBtn==='function') updateApplyBtn();
   const grid = document.getElementById('brandGrid');
   if(!brands.length){ grid.innerHTML='<div class="state-msg">Keine Marken gefunden.</div>'; return; }
   grid.innerHTML = brands.map(b => {
@@ -1476,6 +1618,8 @@ async function init(){
   renderAuth();
   try {
     await dataProvider.load();
+    buildTaxo();
+    renderFilterBar();
     renderBrands();
   } catch(e){
     document.getElementById('brandGrid').innerHTML =
