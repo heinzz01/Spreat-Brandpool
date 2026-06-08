@@ -173,8 +173,8 @@
   .prod-price .uvp-l{font-size:10.5px;color:var(--muted)}
   .prod-margin{font-size:11.5px;color:var(--green);font-weight:700;background:var(--green-soft);
     padding:3px 7px;border-radius:6px;align-self:flex-start}
-  .prod-btn{padding:8px;border-radius:8px;font-size:12.5px;font-weight:700;background:var(--accent-soft);color:var(--accent)}
-  .prod-btn:hover{background:#e0e3fd}
+  .prod-btn{padding:8px;border-radius:8px;font-size:12.5px;font-weight:700;background:var(--accent);color:#fff}
+  .prod-btn:hover{background:#239a51}
   .prod-btn.in{background:var(--green-soft);color:var(--green)}
   .no-results{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;font-size:14px}
 
@@ -1097,7 +1097,7 @@ function renderProducts(){
                <span class="uvp" data-tip="${esc(TIP.uvp)}">${eur(p.uvp_preis)}</span>
                <span class="uvp-l">UVP</span>
              </div>
-             <span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % · +${eur(marge)} Marge</span>`
+             <span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % = ${eur(marge)} Marge</span>`
           : `<div class="prod-price"><span class="uvp-l">Preis auf Anfrage</span></div>`}
         <button class="prod-btn ${inCart?'in':''}" onclick="event.stopPropagation();toggleCart('${p.produkt_id}')">
           ${inCart?'✓ In Anfrage':'+ Zur Anfrage'}</button>
@@ -1142,7 +1142,7 @@ function openProduct(id){
   if(p.uvp_preis > 0){
     document.getElementById('pdPrice').textContent = eur(p.uvp_preis);
     document.getElementById('pdMargin').innerHTML =
-      `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf</span><span>${p.provision_prozent} % Provision</span>`;
+      `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf = ${p.provision_prozent} % Provision</span>`;
   } else {
     document.getElementById('pdPrice').textContent = 'Preis auf Anfrage';
     document.getElementById('pdMargin').innerHTML = '';
