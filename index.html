@@ -41,7 +41,45 @@
 
   .hero{padding:34px 0 8px}
   .hero h1{font-size:30px;letter-spacing:-.03em;margin-bottom:8px}
-  .hero p{color:var(--muted);max-width:660px;font-size:15px}
+  .hero p{color:var(--muted);max-width:680px;font-size:15px}
+
+  /* Horizontale Schritt-Timeline (Variante A) */
+  .flow{margin:20px 0 2px;position:relative}
+  .flow-steps{display:flex;gap:0;overflow-x:auto;padding:4px 2px 8px;scrollbar-width:none}
+  .flow-steps::-webkit-scrollbar{display:none}
+  .flow-step{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;
+    text-align:center;position:relative;cursor:default}
+  .flow-step:not(:last-child)::after{content:"";position:absolute;top:15px;left:50%;width:100%;
+    height:2px;background:var(--border);z-index:0}
+  .flow-num{width:31px;height:31px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;
+    font-size:13px;display:grid;place-items:center;position:relative;z-index:1;box-shadow:0 0 0 4px var(--bg);
+    transition:box-shadow .12s}
+  .flow-label{font-size:11.5px;color:var(--text);margin-top:9px;line-height:1.32;padding:0 7px;transition:color .12s}
+  .flow-step.active .flow-num{box-shadow:0 0 0 4px var(--accent),0 0 0 6px var(--accent-soft)}
+  .flow-step.active .flow-label{color:var(--accent);font-weight:700}
+  .flow-caption{margin-top:12px;background:var(--accent-soft);border-radius:9px;padding:11px 13px;
+    font-size:12.5px;line-height:1.5;color:#1f3d33}
+  .flow-more{display:none}
+  .flow-foot{font-size:11px;color:var(--muted);margin-top:8px}
+  /* Vertikaler Strahl im Popup */
+  .vflow{display:flex;flex-direction:column;gap:0}
+  .vflow-step{display:flex;gap:13px;position:relative;padding-bottom:18px}
+  .vflow-step:not(:last-child)::after{content:"";position:absolute;left:15px;top:31px;bottom:0;width:2px;background:var(--border)}
+  .vflow-num{width:31px;height:31px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;
+    font-size:13px;display:grid;place-items:center;flex:0 0 auto;position:relative;z-index:1}
+  .vflow-txt{padding-top:2px}
+  .vflow-t{font-size:13.5px;font-weight:700}
+  .vflow-d{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:2px}
+  @media(max-width:640px){
+    .flow-step{flex:0 0 120px}.flow-label{font-size:11px}
+    .flow-caption{display:none}
+    .flow{padding-right:30px}
+    .flow::after{content:"";position:absolute;right:0;top:0;bottom:34px;width:42px;
+      background:linear-gradient(90deg,transparent,var(--bg));pointer-events:none}
+    .flow-more{display:inline-flex;align-items:center;gap:5px;margin-top:10px;background:var(--card);
+      border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:8px 15px;
+      font-size:12.5px;font-weight:700;cursor:pointer;position:relative;z-index:2}
+  }
 
   .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:22px 0 6px}
   .search{flex:1;min-width:220px;position:relative}
@@ -84,6 +122,9 @@
     border:1px solid var(--border)}
   .brand-prod .pname{font-size:11.5px;text-align:center;color:var(--muted);line-height:1.3;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .skel{background:linear-gradient(90deg,#eef0f3 25%,#f6f7f9 37%,#eef0f3 63%);background-size:400% 100%;
+    animation:shimmer 1.4s ease infinite;border-radius:11px;aspect-ratio:1}
+  @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
   .more-tile{border:1px dashed #a6e0bf;border-radius:11px;display:grid;place-items:center;
     aspect-ratio:1;font-weight:800;font-size:16px;color:var(--accent);background:var(--accent-soft);
     text-align:center;line-height:1.25}
@@ -221,6 +262,22 @@
   .calc-row span[data-tip]{border-bottom:1px dotted rgba(31,61,51,.4)}
   .req-cta{width:100%;margin-bottom:10px}
   .calc-hint{font-size:11px;color:var(--muted);line-height:1.4}
+  /* Rechner-Toggle + Info-Icon */
+  .calc-toggle{display:flex;align-items:center;gap:9px;background:var(--bg);border-radius:10px;
+    padding:10px 12px;margin-bottom:14px;font-size:13px;font-weight:600;color:var(--text)}
+  .calc-toggle .ct-sub{font-weight:400;color:var(--muted);font-size:11.5px}
+  .sw{position:relative;width:42px;height:24px;flex:0 0 auto;margin-left:auto}
+  .sw input{opacity:0;width:0;height:0;position:absolute}
+  .sw label{position:absolute;inset:0;background:#cfd3da;border-radius:999px;cursor:pointer;transition:.15s}
+  .sw label::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;
+    top:3px;left:3px;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .sw input:checked + label{background:var(--accent)}
+  .sw input:checked + label::after{transform:translateX(18px)}
+  .info-ic{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;
+    background:var(--muted);color:#fff;font-size:10px;font-weight:800;cursor:pointer;flex:0 0 auto;vertical-align:middle}
+  .info-ic:hover{background:var(--text)}
+  .req-cta-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .req-cta-row .req-cta{margin-bottom:0;flex:1}
 
   .popup{position:fixed;z-index:60;left:50%;top:50%;transform:translate(-50%,-50%);
     width:min(440px,92vw);background:var(--card);border-radius:16px;display:none;
@@ -231,6 +288,16 @@
   .popup-head h3{font-size:16px}
   .popup-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px;max-height:66vh;overflow-y:auto}
   .field label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px}
+  .field label .rq{color:#dc2626;font-weight:700}
+  .field-hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.35}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .bchip{padding:6px 11px;border-radius:999px;border:1px solid var(--border);background:var(--card);
+    color:var(--text);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.12s}
+  .bchip:hover{border-color:#c7cbd4;background:#fafbfc}
+  .bchip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .faq-q{font-weight:700;font-size:13.5px;margin-bottom:4px}
+  .faq-a{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:15px}
+  .faq-a:last-child{margin-bottom:0}
   .field input,.field textarea,.field select{width:100%;padding:10px 12px;border:1px solid var(--border);
     border-radius:9px;font-size:13.5px;outline:none;background:var(--card)}
   .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
@@ -453,6 +520,42 @@
   .search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:none;background:var(--bg);border-radius:50%;color:var(--muted);cursor:pointer;display:none;align-items:center;justify-content:center;font-size:12px;line-height:1;padding:0}
   .search-clear.show{display:flex}
   .search-clear:hover{background:#eef0f3;color:var(--text)}
+  /* Topbar-Navigation */
+  .nav-right{display:flex;align-items:center;gap:6px}
+  .nav-link{background:none;border:none;color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;
+    padding:7px 11px;border-radius:9px;transition:.12s}
+  .nav-link:hover{color:var(--text);background:var(--bg)}
+  .nav-sep{width:1px;height:22px;background:var(--border);margin:0 4px}
+  .btn-cart{background:var(--text);color:#fff;border:none;border-radius:10px;
+    padding:9px 15px;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:8px;
+    transition:.12s;cursor:pointer}
+  .btn-cart:hover{background:#000}
+  .btn-cart svg,.fab svg{display:block;flex:0 0 auto}
+  .acct-chip{display:inline-flex;align-items:center;gap:7px;background:var(--accent-soft);
+    border:1px solid #bfe6d6;color:var(--green);border-radius:999px;padding:6px 12px;font-size:13px;
+    font-weight:600;cursor:pointer}
+  .acct-chip .dot2{width:7px;height:7px;border-radius:50%;background:var(--green)}
+  .acct-chip:hover{background:#d6f0e4}
+  .hamburger{display:none;background:none;border:1px solid var(--border);border-radius:9px;
+    width:38px;height:38px;align-items:center;justify-content:center;cursor:pointer;color:var(--text)}
+  .navsheet{position:fixed;z-index:56;right:0;top:0;height:100vh;height:100dvh;width:min(300px,82vw);
+    background:var(--card);transform:translateX(105%);transition:transform .25s ease;display:flex;
+    flex-direction:column;box-shadow:-20px 0 60px rgba(16,18,29,.25)}
+  .navsheet.open{transform:translateX(0)}
+  .navsheet-head{padding:15px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;font-weight:800}
+  .navsheet-head .x-close{margin-left:auto}
+  .navsheet-body{padding:10px;display:flex;flex-direction:column;gap:5px;overflow-y:auto}
+  .navsheet-body button{width:100%;text-align:left;background:none;border:none;padding:13px 12px;
+    border-radius:10px;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;
+    display:flex;align-items:center;gap:11px}
+  .navsheet-body button:hover{background:var(--bg)}
+  .navsheet-acct{font-size:12.5px;color:var(--green);padding:11px 12px;background:var(--accent-soft);
+    border-radius:10px;margin-bottom:6px;word-break:break-all}
+  @media(max-width:640px){
+    .nav-link{padding:6px 8px;font-size:13px}
+    .nav-right > .nav-link,.nav-right > #authArea,.nav-right > .nav-sep,.nav-right > .btn-cart{display:none}
+    .hamburger{display:inline-flex}
+  }
 </style>
 </head>
 <body>
@@ -463,9 +566,12 @@
       <img class="logo-img" src="https://cdn.prod.website-files.com/6675b8a846c2cbec25f829cb/6675cb10048c54618b55d8df_Logo_Spreat_SVG_3920px.svg" alt="Spreat">
       <span class="logo-sub">Brandpool</span>
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <span id="authArea" style="display:flex;align-items:center;gap:8px"></span>
-      <button class="btn btn-ghost" onclick="openCart()">🛒 Meine Sortiments-Anfrage</button>
+    <div class="nav-right">
+      <button class="nav-link" onclick="openFaq()">FAQ</button>
+      <span id="authArea" style="display:flex;align-items:center;gap:6px"></span>
+      <span class="nav-sep"></span>
+      <button class="btn-cart" onclick="openCart()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> <span class="cart-label">Meine Sortiments-Anfrage</span></button>
+      <button class="hamburger" id="hamburger" onclick="openNavMenu()" aria-label="Menü"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     </div>
   </div>
 </div>
@@ -473,14 +579,18 @@
 <div class="wrap">
   <div class="hero">
     <h1>Finde die nächsten <span class="hl-hand">Bestseller</span> für dein Sortiment</h1>
-    <p>Stell dir dein Wunschsortiment aus geprüften E-Commerce-Marken zusammen. Trage ein,
-       wie oft du jedes Produkt pro Monat verkaufst — der Rechner zeigt dir live deine
-       Netto-Marge. Am Ende fragst du alle Marken mit einem Klick an.</p>
+    <p>Stell dir dein Wunschsortiment aus geprüften Lieferanten zusammen, kalkuliere deine Marge
+       und frag am Ende alle mit einem Klick an. Kein Warenrisiko, keine Fixkosten.</p>
+    <div class="flow">
+      <div class="flow-steps" id="flowSteps"></div>
+      <div class="flow-caption" id="flowCaption"></div>
+      <button class="flow-more" id="flowMore" onclick="openFlowPopup()">Alle 8 Schritte ansehen ›</button>
+    </div>
   </div>
 
   <div class="toolbar">
     <div class="search">
-      <input type="text" id="brandSearch" placeholder="Marken und Produkte finden …" oninput="renderBrands();toggleSearchClear()">
+      <input type="text" id="brandSearch" placeholder="Lieferanten und Produkte finden …" oninput="renderBrands();toggleSearchClear()">
       <button type="button" id="brandClear" class="search-clear" aria-label="Suche löschen" onclick="clearBrandSearch()">✕</button>
     </div>
   </div>
@@ -488,12 +598,12 @@
   <div class="filterwrap">
     <div class="filterbar" id="filterbar"></div>
     <button class="filter-mobilebtn" id="filterMobileBtn" onclick="openFilterSheet()">
-      <span class="fb-left">&#9776;&nbsp; Branche filtern <span class="fb-val" id="fbVal">Alle Marken</span></span>
+      <span class="fb-left">&#9776;&nbsp; Branche filtern <span class="fb-val" id="fbVal">Alle Lieferanten</span></span>
       <span class="fb-badge" id="fbBadge" style="display:none">1</span>
     </button>
   </div>
   <div class="brand-rows" id="brandGrid">
-    <div class="state-msg">Lade Marken aus Supabase …</div>
+    <div class="state-msg">Lade Lieferanten …</div>
   </div>
 </div>
 
@@ -510,6 +620,14 @@
   </div>
 </div>
 
+<!-- Mobiles Menü (Slide-in) -->
+<div class="navsheet" id="navMenu">
+  <div class="navsheet-head">Menü
+    <button class="x-close" onclick="closeNavMenu()">✕</button>
+  </div>
+  <div class="navsheet-body" id="navMenuBody"></div>
+</div>
+
 <footer class="site-foot">
   <span>© <span id="footYear"></span> Spreat</span>
   <span class="sep">·</span>
@@ -519,7 +637,7 @@
 </footer>
 
 <button class="fab" id="fab" onclick="openCart()">
-  🛒 <span id="fabCount">0 Produkte</span>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> <span id="fabCount">0 Produkte</span>
   <span class="fab-sep"></span>
   <span class="fab-margin" id="fabMargin">+0 €/Monat</span>
 </button>
@@ -536,7 +654,7 @@
         <p id="mTag"></p>
       </div>
       <div class="modal-head-icons">
-        <button class="x-close share-ic" onclick="copyShareLink(event)" data-tip="Link zu dieser Marke kopieren" aria-label="Link kopieren"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button>
+        <button class="x-close share-ic" onclick="copyShareLink(event)" data-tip="Link zu diesem Lieferanten kopieren" aria-label="Link kopieren"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></button>
         <button class="x-close" onclick="closeAll()">✕</button>
       </div>
     </div>
@@ -562,7 +680,7 @@
   <div class="drawer-head">
     <div>
       <h2>Meine Sortiments-Anfrage</h2>
-      <p>Marge kalkulieren & Marken direkt anfragen</p>
+      <p>Marge kalkulieren & Lieferanten direkt anfragen</p>
     </div>
     <button class="x-close" style="margin-left:auto" onclick="closeAll()">✕</button>
   </div>
@@ -573,13 +691,13 @@
 <!-- Contact popup -->
 <div class="popup" id="contactPopup">
   <div class="popup-head">
-    <h3 id="cpTitle">Marke kontaktieren</h3>
+    <h3 id="cpTitle">Lieferant kontaktieren</h3>
     <button class="x-close" style="margin-left:auto" onclick="closeContact()">✕</button>
   </div>
   <div id="cpForm">
     <div class="popup-body">
       <div class="field"><label>Deine E-Mail-Adresse</label>
-        <input type="email" id="cpEmail" placeholder="laden@beispiel.de"></div>
+        <input type="email" id="cpEmail" placeholder="Max.Mustermann@email.de"></div>
       <div class="field"><label>Deine Nachricht</label><textarea id="cpMsg"></textarea></div>
       <div class="form-err" id="cpErr" style="display:none"></div>
     </div>
@@ -590,7 +708,7 @@
   </div>
   <div class="ok-state" id="cpOk" style="display:none">
     <div class="big">✅</div><strong>Anfrage gesendet</strong>
-    <p style="color:var(--muted);font-size:13px;margin-top:6px">Die Marke meldet sich bei dir — Spreat ist in Kopie.</p>
+    <p style="color:var(--muted);font-size:13px;margin-top:6px">Der Lieferant meldet sich bei dir — Spreat ist in Kopie.</p>
   </div>
 </div>
 
@@ -605,7 +723,7 @@
       <div class="req-intro">Melde dich mit deiner E-Mail-Adresse an — wir senden dir einen
         6-stelligen Code, kein Passwort nötig.</div>
       <div class="field"><label>E-Mail-Adresse</label>
-        <input type="email" id="lgEmail" placeholder="laden@beispiel.de"></div>
+        <input type="email" id="lgEmail" placeholder="Max.Mustermann@email.de"></div>
       <div class="form-err" id="lgFormErr" style="display:none"></div>
     </div>
     <div class="popup-foot">
@@ -639,61 +757,52 @@
   </div>
   <div id="pfForm">
     <div class="popup-body">
-      <div class="req-intro">Damit die Marken deine Anfrage ernst nehmen und dir passende Konditionen anbieten können,
-        legst du einmalig dein kostenloses Händler-Profil an. Deine E-Mail-Adresse ist zugleich dein Login —
-        beim nächsten Mal meldest du dich einfach damit an. Je aussagekräftiger dein Profil (Lage, Filialen,
-        Handelsvolumen), desto bessere Provisionen kannst du mit den Marken verhandeln.</div>
+      <div class="req-intro" id="pfIntro">Mit deinem kostenlosen Händler-Profil siehst du die durchschnittlichen
+        Laden-Provisionen und kannst Lieferanten anfragen. Deine E-Mail ist zugleich dein Login. Je
+        aussagekräftiger dein Profil (Lage, Filialen, Handelsvolumen), desto höher die Chance, dass die
+        Marke zusagt und eine gute Provision für dich herauskommt.</div>
+      <div id="pfReqWrap" style="display:none">
+        <button type="button" class="btn btn-ghost" style="width:100%" onclick="openRequestsOverview()">📋 Meine Anfragen ansehen</button>
+      </div>
       <div class="form-section">
         <div class="form-section-title"><span class="num">1</span>Ansprechpartner</div>
         <div class="field-row">
-          <div class="field"><label>Name</label><input type="text" id="pfName" placeholder="Vor- und Nachname"></div>
-          <div class="field"><label>Funktion</label><input type="text" id="pfRole" placeholder="z.B. Inhaber:in"></div>
+          <div class="field"><label>Name <span class="rq">*</span></label><input type="text" id="pfName" placeholder="Vor- und Nachname"></div>
+          <div class="field"><label>Funktion <span class="rq">*</span></label>
+            <select id="pfRole">
+              <option value="">Bitte wählen …</option>
+              <option>Inhaber:in</option>
+              <option>Geschäftsführer:in</option>
+              <option>Filial-/Store-Leiter:in</option>
+              <option>Einkäufer:in</option>
+              <option>Category-/Sortimentsmanager:in</option>
+              <option>Verkauf / Mitarbeiter:in</option>
+              <option>Sonstiges</option>
+            </select></div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Telefon</label><input type="text" id="pfPhone" placeholder="+49 …"></div>
-          <div class="field"><label>E-Mail</label><input type="email" id="pfEmail" placeholder="laden@beispiel.de"></div>
+          <div class="field"><label>Telefon <span class="rq">*</span></label><input type="text" id="pfPhone" placeholder="+49 …"></div>
+          <div class="field"><label>E-Mail <span class="rq">*</span></label><input type="email" id="pfEmail" placeholder="Max.Mustermann@email.de"></div>
         </div>
       </div>
       <div class="form-section">
         <div class="form-section-title"><span class="num">2</span>Geschäftsprofil & Standort</div>
-        <div class="field"><label>Branche / Sortimentsschwerpunkt</label>
-          <select id="pfBranch">
-            <option>Concept Store / Geschenke</option>
-            <option>Drogerie, Kosmetik & Beauty</option>
-            <option>Spielwaren & Kinder</option>
-            <option>Lebensmittel, Feinkost & Kiosk</option>
-            <option>Getränke & Spirituosen</option>
-            <option>Haushalt, Küche & Wohnen</option>
-            <option>Möbel & Einrichtung</option>
-            <option>Mode, Schuhe & Accessoires</option>
-            <option>Schmuck & Uhren</option>
-            <option>Sport, Freizeit & Outdoor</option>
-            <option>Elektronik & Technik</option>
-            <option>Smart Home & Haushaltsgeräte</option>
-            <option>Bau-, Garten- & Heimwerkermarkt</option>
-            <option>Tierbedarf / Zoofachhandel</option>
-            <option>Buch, Schreibwaren & Papeterie</option>
-            <option>Gesundheit, Apotheke & Sanitätshaus</option>
-            <option>Baby & Kind</option>
-            <option>Reformhaus / Bio & Nachhaltigkeit</option>
-            <option>Friseur / Barber / Kosmetikstudio</option>
-            <option>Café, Hotel & Gastronomie</option>
-            <option>Tankstelle / Convenience</option>
-            <option>Souvenir & Tourismus</option>
-            <option>Online-Shop / E-Commerce</option>
-            <option>Sonstiges</option>
-          </select></div>
+        <div class="field"><label>Branche / Sortimentsschwerpunkt <span class="rq">*</span>
+            <span style="font-weight:400">(Mehrfachauswahl möglich)</span></label>
+          <div class="chips" id="pfBranchChips"></div></div>
         <div class="field-row">
-          <div class="field"><label>Anzahl Filialen</label><input type="number" id="pfStores" min="1" value="1" placeholder="1"></div>
-          <div class="field"><label>Ø monatliches Handelsvolumen</label>
+          <div class="field"><label>Anzahl Filialen <span class="rq">*</span></label><input type="number" id="pfStores" min="1" value="1" placeholder="1"></div>
+          <div class="field"><label>Ø Handelsvolumen / Monat</label>
             <select id="pfVolume">
               <option>unter 5.000 €</option><option>5.000–20.000 €</option>
               <option>20.000–50.000 €</option><option>50.000–100.000 €</option><option>über 100.000 €</option>
-            </select></div>
+            </select>
+            <div class="field-hint">Gesamtes Unternehmen (alle Filialen), pro Monat.</div></div>
         </div>
-        <div class="field"><label>Adresse des Ladenlokals</label>
+        <div class="field"><label>Geschäftsadresse <span class="rq">*</span></label>
           <input type="text" id="pfAddr" placeholder="Straße, PLZ, Ort"></div>
       </div>
+      <div class="field-hint"><span class="rq">*</span> Pflichtfeld</div>
       <div class="cc-note">🔒 Mit „Registrieren" senden wir einen 6-stelligen Code an deine
         E-Mail. Nach der Bestätigung ist dein Profil in Spreat gespeichert und du bist angemeldet.</div>
       <div class="form-err" id="pfErr" style="display:none"></div>
@@ -720,7 +829,7 @@
 <!-- Sammel-Anfrage -->
 <div class="popup wide" id="requestPopup">
   <div class="popup-head">
-    <h3>Marken anfragen</h3>
+    <h3 id="reqPopupTitle">Lieferanten anfragen</h3>
     <button class="x-close" style="margin-left:auto" onclick="closeRequest()">✕</button>
   </div>
   <div id="reqForm">
@@ -730,8 +839,6 @@
       <div class="req-summary" id="reqSummary"></div>
       <div class="field"><label>Nachricht an das Spreat-Team (optional)</label>
         <textarea id="reqMsg" placeholder="z.B. besondere Wünsche, Liefertermine, Fragen …"></textarea></div>
-      <div class="cc-note">📩 Deine Anfrage geht zuerst an das Spreat-Team zur Prüfung und wird dann
-        an die Marken weitergeleitet.</div>
       <div class="form-err" id="reqErr" style="display:none"></div>
     </div>
     <div class="popup-foot">
@@ -740,9 +847,87 @@
     </div>
   </div>
   <div class="ok-state" id="reqOk" style="display:none">
-    <div class="big">✅</div><strong id="reqOkTitle">Anfrage übermittelt</strong>
-    <p style="color:var(--muted);font-size:13px;margin-top:6px">Das Spreat-Team prüft deine Anfrage
-      und leitet sie an die Marken weiter.</p>
+    <div class="big">✅</div><strong id="reqOkTitle" style="font-size:18px;color:var(--text)">Erfolgreich angefragt</strong>
+    <p style="color:var(--muted);font-size:13px;margin-top:6px" id="reqOkBody">Spreat bearbeitet die Anfrage
+      und leitet sie an den Lieferanten weiter.</p>
+    <button class="btn btn-ghost" style="margin-top:16px" onclick="openRequestsOverview()">📋 Meine Anfragen ansehen</button>
+  </div>
+</div>
+
+<!-- Ablauf / Timeline (Popup für Mobile) -->
+<div class="popup wide" id="flowPopup">
+  <div class="popup-head">
+    <h3>So funktioniert's</h3>
+    <button class="x-close" style="margin-left:auto" onclick="closeFlowPopup()">✕</button>
+  </div>
+  <div class="popup-body"><div class="vflow" id="vflowBody"></div></div>
+  <div class="popup-foot">
+    <button class="btn btn-primary" style="flex:1" onclick="closeFlowPopup()">Verstanden</button>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="popup wide" id="faqPopup">
+  <div class="popup-head">
+    <h3>Häufige Fragen</h3>
+    <button class="x-close" style="margin-left:auto" onclick="closeFaq()">✕</button>
+  </div>
+  <div class="popup-body">
+    <div class="faq-q">Was kostet es mich als Händler, Produkte über Spreat zu verkaufen?</div>
+    <div class="faq-a">Nichts. Für dich als Händler fallen 0 € Fixkosten, keine Aufnahmegebühren und
+      keine monatlichen Grundkosten an. Du gehst nicht in Vorleistung und hast absolut keine
+      Kapitalbindung. Spreat arbeitet rein erfolgsbasiert und finanziert sich über eine Gebühr von
+      5 % inkl. Zahlungsdienstleister-Gebühr.</div>
+    <div class="faq-q">Wann bekomme ich eine Rückmeldung auf meine Anfrage?</div>
+    <div class="faq-a">Spreat prüft deine Anfrage und leitet sie an die Marke weiter. In der Regel
+      meldet sich die Marke innerhalb weniger Werktage bei dir.</div>
+    <div class="faq-q">Wie lange bleiben die Produkte in meinem Geschäft?</div>
+    <div class="faq-a">Standardmäßig sicherst du der Marke zu, die Produkte für eine Mindestlaufzeit
+      von 90 Tagen in deinem Laden anzubieten, sofern ihr im Vorfeld nichts anderes vereinbart habt.
+      Nach Ablauf dieser 90 Tage kannst du ab sofort die Abholung der nicht verkauften Produkte
+      veranlassen – die Kosten für diese Rücksendung trägt dann die Marke.</div>
+    <div class="faq-q">Wer haftet, wenn Ware in meinem Laden beschädigt oder gestohlen wird?</div>
+    <div class="faq-a">Sobald du die Lieferung in Empfang genommen hast, haftest du für die bei dir
+      gelagerten Produkte. Etwaige Schäden durch Kunden oder Diebstahl sind der Marke zu ersetzen und
+      im System zu vermerken. Wichtig: Reguläre Qualitätsverluste, Produktionsfehler oder der Ablauf
+      von Haltbarkeitsdaten zählen nicht als Schaden und sind weiterhin das Risiko der Marke.</div>
+    <div class="faq-q">Wie und wann wird meine Provision ausgezahlt?</div>
+    <div class="faq-a">Verkauft ihr ein Produkt, splittet unser intelligentes Kassensystem den
+      Zahlungsbetrag an der Kasse vollautomatisch in Echtzeit auf. Die gesammelten Umsätze und
+      Provisionen werden in der Regel gebündelt einmal im Monat direkt auf dein hinterlegtes
+      Auszahlungskonto überwiesen. Häufigere Auszahlungsrhythmen sind nach Absprache ebenfalls
+      problemlos möglich.</div>
+    <div class="faq-q">Was passiert bei Umtausch oder Rückgabe durch den Kunden?</div>
+    <div class="faq-a">Retouren wickelst du als Händler direkt vor Ort im Namen der Marke ab und
+      vermerkst dies im System. Du prüfst ganz einfach, ob das Produkt intakt ist: Ist es voll
+      funktionstüchtig, nimmst du es wieder in deinen Verkaufsbestand auf. Andernfalls geht es an die
+      Marke zurück oder wird nach Absprache entsorgt.</div>
+    <div class="faq-q">Welchen buchhalterischen Aufwand habe ich mit Spreat?</div>
+    <div class="faq-a">Dein Aufwand sinkt drastisch. Da der Kunde an der Kasse rechtlich gesehen direkt
+      beim Produzenten kauft, entfällt der klassische buchhalterische Einkaufs- und Verkaufsprozess für
+      deinen Laden. Spreat übernimmt die Zahlungsabwicklung und automatisiert die Rechnungserstellung.
+      Da du keine Lieferantenrechnungen mehr überweisen und verbuchen musst, sinkt dein
+      Bürokratieaufwand um bis zu 95 %.</div>
+    <div class="faq-q">Muss ich für Spreat mein komplettes Kassensystem im Laden umstellen?</div>
+    <div class="faq-a">Nein. Spreat kann ganz einfach parallel zu deinem bestehenden System genutzt
+      werden, um das neue, erweiterte Marktplatz-Sortiment abzuwickeln. Dein klassisches Sortiment
+      führst du wie gewohnt weiter. Langfristig lässt sich Spreat aber auch als alleiniges Hauptsystem
+      nutzen oder über Schnittstellen (API) tief in deine bestehende Kasseninfrastruktur integrieren.</div>
+  </div>
+  <div class="popup-foot">
+    <button class="btn btn-primary" style="flex:1" onclick="closeFaq()">Schließen</button>
+  </div>
+</div>
+
+<!-- Anfrageübersicht -->
+<div class="popup wide" id="requestsPopup">
+  <div class="popup-head">
+    <h3>Meine Anfragen</h3>
+    <button class="x-close" style="margin-left:auto" onclick="closeRequestsOverview()">✕</button>
+  </div>
+  <div class="popup-body" id="requestsBody"></div>
+  <div class="popup-foot">
+    <button class="btn btn-primary" style="flex:1" onclick="closeRequestsOverview()">Schließen</button>
   </div>
 </div>
 
@@ -777,13 +962,16 @@ const SUPABASE_URL = 'https://lzgrcnkatchkrvlrjnxa.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_L0JTr0QFuUMiS5S5JPCPig_auZT1zZF';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let _brands = null, _products = null;
+let _brands = null, _products = [];
+let productsLoaded = false;
 
 const dataProvider = {
-  async load(){
+  async loadBrands(){
     const {data:bd,error:be} = await sb.from('brands').select('*').eq('sichtbar', true).order('position');
     if(be) throw be;
     _brands = bd || [];
+  },
+  async loadProducts(){
     // Produkte paginiert laden — PostgREST liefert max. 1000 Zeilen pro Request,
     // der Katalog hat tausende. Ohne diese Schleife zeigen spätere Marken "0 Produkte".
     let all = [], from = 0; const PAGE = 1000;
@@ -797,7 +985,9 @@ const dataProvider = {
     }
     _products = all.map(p => ({...p, uvp_preis: Number(p.uvp_preis)||0,
       provision_prozent: Number(p.provision_prozent)||0}));
+    productsLoaded = true;
   },
+  async load(){ await this.loadBrands(); await this.loadProducts(); },
   getBrands(){
     return _brands.map(b => {
       const ps = _products.filter(p => p.marken_id === b.marken_id);
@@ -820,22 +1010,48 @@ const initials = n => (n||'?').replace(/[^A-Za-zÄÖÜ ]/g,'').trim().split(' ')
 const esc = s => String(s==null?'':s).replace(/"/g,'&quot;');
 const escTxt = s => String(s==null?'':s).replace(/</g,'&lt;');
 const gv = id => (document.getElementById(id).value||'').trim();
-const marginOf = p => p.uvp_preis * p.provision_prozent / 100;
+// Margen/Provisionen erst nach Registrierung sichtbar. Vorher rechnet der Rechner pauschal mit 30 %.
+const DEMO_PROV = 30;
+function isRegistered(){ return !!(session && session.loggedIn && session.profile); }
+function effProv(p){ return isRegistered() ? (Number(p.provision_prozent)||0) : DEMO_PROV; }
+const marginOf = p => p.uvp_preis * effProv(p) / 100;
 function provLabel(b){ return b.provision_min===b.provision_max
   ? b.provision_min+' %' : b.provision_min+'–'+b.provision_max+' %'; }
+// Such-Matcher: endet die Eingabe auf Leerzeichen -> exakte Wortgrenze ("auto " ≠ "automat").
+function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+function makeMatcher(rawValue){
+  const raw = (rawValue||'').toLowerCase();
+  const word = /\s$/.test(raw);
+  const q = raw.trim();
+  return { q, active: !!q,
+    test(text){ if(!q) return true; text=(text||'').toLowerCase();
+      return word ? new RegExp('\\b'+escRe(q)+'\\b').test(text) : text.includes(q); } };
+}
+// Trifft ein Produkt den aktiven Branchen-Filter? (für Hero-/Listen-Priorisierung)
+function matchesActiveFilter(p){
+  if(!FILTER.haupt) return false;
+  if(p.kategorie_haupt !== FILTER.haupt) return false;
+  if(FILTER.unter && p.kategorie_unter !== FILTER.unter) return false;
+  return true;
+}
 
 const TIP = {
-  prov:'Laden-Provision = der Anteil am Verkaufspreis, den die Marke bereit ist dir als Marge zu überlassen. Das ist ein Richtwert, kein Fixwert: Je besser deine Lage und je höher dein monatliches Handelsvolumen, desto mehr kannst du verlangen und nachverhandeln.',
-  count:'Anzahl der Produkte dieser Marke, die du in deine Sortiments-Anfrage aufnehmen kannst.',
-  avg:'Durchschnittlicher Verkaufspreis (UVP) über alle Produkte dieser Marke — grobe Orientierung pro Verkauf.',
+  prov:'Ø Laden-Provision = der Anteil am Verkaufspreis, den die Marke bereit ist dir als Marge zu überlassen. Das ist ein Richtwert, kein Fixwert und kann dementsprechend noch variieren: Je besser deine Lage und je höher dein monatliches Handelsvolumen, desto mehr kannst du verlangen und nachverhandeln.',
+  calc:'Der Margenrechner dient als Kalkulationshilfe: Die Verkäufe pro Monat sind hypothetisch und dienen nur deiner eigenen Margen-Schätzung. Diese Zahlen werden nicht an die Lieferanten übermittelt.',
+  reqflow:'Deine Anfrage geht zuerst an das Spreat-Team. Wir prüfen sie und leiten sie an den Lieferanten weiter. Das ist KEINE verbindliche Produktbestellung.',
+  provlocked:'Du musst dich zuerst kostenlos als Händler registrieren, um die durchschnittlichen Laden-Provisionen und deine Margen zu sehen. Bis dahin rechnet der Rechner vereinfacht mit 30 %.',
+  count:'Anzahl der Produkte dieses Lieferanten, die du in deine Sortiments-Anfrage aufnehmen kannst.',
+  avg:'Durchschnittlicher Verkaufspreis (UVP) über alle Produkte dieses Lieferanten — grobe Orientierung pro Verkauf.',
   uvp:'UVP = unverbindliche Preisempfehlung. Zu diesem Preis verkaufst du das Produkt an deine Endkunden.',
   units:'Summe aller Stückzahlen, die du pro Monat über alle Produkte verkaufen möchtest.',
-  revenue:'Gesamter Verkaufswert pro Monat zu UVP — der Umsatz, bevor die Marke ihren Anteil erhält.',
+  revenue:'Gesamter Verkaufswert pro Monat zu UVP — der Umsatz, bevor der Lieferant seinen Anteil erhält.',
   avgprov:'Gewichteter Durchschnitt der Provisionssätze aller Produkte in deiner Anfrage.',
   netmargin:'Dein Verdienst pro Monat: Umsatz × Provision. Dieser Betrag bleibt bei dir.',
 };
 
 let cart = {};
+let calcOn = true;          // Margen-Rechner an/aus (von der Bestellung getrennt)
+let myRequests = [];        // gesendete Anfragen dieser Session (Anfrageübersicht)
 let activeBrand = null;
 let activeCat = 'Alle';
 let reqGroupCount = 0;
@@ -949,7 +1165,7 @@ function brandPasses(id){
 }
 function renderFilterBar(){
   const bar=document.getElementById('filterbar'); if(!bar) return;
-  let r1=`<div class="filter-row"><button class="fchip ${!FILTER.haupt?'active':''}" onclick="setHaupt(null)">Alle Marken</button>`;
+  let r1=`<div class="filter-row"><button class="fchip ${!FILTER.haupt?'active':''}" onclick="setHaupt(null)">Alle Lieferanten</button>`;
   TAXO.forEach(t=>{ r1+=`<button class="fchip ${FILTER.haupt===t.haupt?'active':''}" onclick="setHaupt('${jsq(t.haupt)}')">${escTxt(t.haupt)}</button>`; });
   r1+=`</div>`;
   let r2='';
@@ -967,14 +1183,14 @@ function renderFilterBar(){
 function renderMobileBtn(){
   const val=document.getElementById('fbVal'), badge=document.getElementById('fbBadge'); if(!val) return;
   if(FILTER.haupt){ val.textContent=FILTER.unter?FILTER.haupt+' › '+FILTER.unter:FILTER.haupt; badge.style.display=''; badge.textContent=FILTER.unter?'2':'1'; }
-  else { val.textContent='Alle Marken'; badge.style.display='none'; }
+  else { val.textContent='Alle Lieferanten'; badge.style.display='none'; }
 }
 function setHaupt(h){ FILTER.haupt=h; FILTER.unter=null; renderFilterBar(); renderBrands(); }
 function setUnter(u){ FILTER.unter=u; renderFilterBar(); renderBrands(); }
 function resetFilter(){ FILTER={haupt:null,unter:null}; renderFilterBar(); renderFilterSheet(); renderBrands(); }
 function renderFilterSheet(){
   const body=document.getElementById('filterSheetBody'); if(!body) return;
-  let h=`<div class="fs-item ${!FILTER.haupt?'open':''}"><button class="fs-haupt ${!FILTER.haupt?'sel':''}" onclick="setHaupt(null);renderFilterSheet()">Alle Marken</button></div>`;
+  let h=`<div class="fs-item ${!FILTER.haupt?'open':''}"><button class="fs-haupt ${!FILTER.haupt?'sel':''}" onclick="setHaupt(null);renderFilterSheet()">Alle Lieferanten</button></div>`;
   TAXO.forEach(t=>{
     const open=FILTER.haupt===t.haupt;
     h+=`<div class="fs-item ${open?'open':''}"><button class="fs-haupt ${open?'sel':''}" onclick="toggleSheetHaupt('${jsq(t.haupt)}')"><span class="chev">›</span>${escTxt(t.haupt)}</button><div class="fs-subs"><button class="fs-sub ${open&&!FILTER.unter?'sel':''}" onclick="pickSheetSub('${jsq(t.haupt)}',null)">Alle in ${escTxt(t.haupt)}</button>${t.subs.map(s=>`<button class="fs-sub ${FILTER.haupt===t.haupt&&FILTER.unter===s?'sel':''}" onclick="pickSheetSub('${jsq(t.haupt)}','${jsq(s)}')">${escTxt(s)}</button>`).join('')}</div></div>`;
@@ -991,39 +1207,52 @@ function toggleSearchClear(){var i=document.getElementById("brandSearch"),b=docu
 function clearBrandSearch(){var i=document.getElementById("brandSearch");if(!i)return;i.value="";toggleSearchClear();renderBrands();i.focus();}
 function renderBrands(){
   if(!_brands){ return; }
-  const q = (document.getElementById('brandSearch').value||'').toLowerCase().trim();
+  const M = makeMatcher(document.getElementById('brandSearch').value);
+  const q = M.q;
   const brands = dataProvider.getBrands().filter(b => {
     if(!brandPasses(b.marken_id)) return false;
-    if(!q) return true;
-    if(b.name.toLowerCase().includes(q)) return true;
-    if((b.kurzbeschreibung||'').toLowerCase().includes(q)) return true;
-    return dataProvider.getProducts(b.marken_id).some(p => (p.produktname||'').toLowerCase().includes(q));
+    if(!M.active) return true;
+    if(M.test(b.name)) return true;
+    if(M.test(b.kurzbeschreibung)) return true;
+    return dataProvider.getProducts(b.marken_id).some(p => M.test(p.produktname));
   });
   lastFilterCount = brands.length;
   if(typeof updateApplyBtn==='function') updateApplyBtn();
   const grid = document.getElementById('brandGrid');
-  if(!brands.length){ grid.innerHTML='<div class="state-msg">Keine Marken gefunden.</div>'; return; }
+  if(!brands.length){ grid.innerHTML='<div class="state-msg">Keine Lieferanten gefunden.</div>'; return; }
   grid.innerHTML = brands.map(b => {
     const prods = dataProvider.getProducts(b.marken_id);
-    // Bei reiner Produktsuche (Query trifft nicht die Marke) die Treffer zuerst zeigen
-    const brandMatch = !q || b.name.toLowerCase().includes(q) || (b.kurzbeschreibung||'').toLowerCase().includes(q);
-    const hits = (q && !brandMatch) ? prods.filter(p => (p.produktname||'').toLowerCase().includes(q)) : [];
+    const brandMatch = M.active && (M.test(b.name) || M.test(b.kurzbeschreibung));
+    // Such-Treffer (nur wenn die Suche die Marke selbst NICHT trifft)
+    const searchHits = (M.active && !brandMatch) ? prods.filter(p => M.test(p.produktname)) : [];
+    // Kontext aus aktivem Branchen-Filter (z.B. Könner&Söhne unter "Kochen & Essen")
+    const filterHits = (!searchHits.length && FILTER.haupt) ? prods.filter(matchesActiveFilter) : [];
     let preview;
-    if(hits.length){
-      const ids = new Set(hits.map(p=>p.produkt_id));
-      preview = [...hits, ...prods.filter(p=>p.featured && !ids.has(p.produkt_id))].slice(0,5);
+    if(searchHits.length){
+      // Reine Produktsuche: NUR die Treffer im Hero, kein Auffüllen mit Featured
+      preview = searchHits.slice(0,5);
+    } else if(filterHits.length){
+      // Aktiver Branchen-Filter: NUR die passenden Produkte zeigen (kein Auffüllen)
+      preview = filterHits.slice(0,5);
     } else {
       preview = prods.filter(p => p.featured).slice(0,5);
-      if(preview.length < 5) preview = prods.slice(0,5);
+      if(preview.length < 5) preview = [...preview, ...prods.filter(p=>!p.featured)].slice(0,5);
     }
-    const rest = prods.length - preview.length;
-    const cells = preview.map(p => `
+    const previewIds = new Set(preview.map(p=>p.produkt_id));
+    const rest = prods.filter(p=>!previewIds.has(p.produkt_id)).length;
+    // Keyword, das beim Öffnen der Marke in die Produktsuche übernommen wird (nur bei Produkt-Treffern)
+    const carry = (searchHits.length ? q : '');
+    // Produkte noch nicht geladen -> Skeleton anzeigen (Seite ist sofort sichtbar)
+    const loadingStrip = !productsLoaded && !prods.length;
+    const cells = loadingStrip
+      ? '<div class="skel"></div>'.repeat(6)
+      : preview.map(p => `
       <div class="brand-prod">
         <div class="prod-thumb" data-gidx="0">${prodGallery(p)}</div>
         <div class="pname">${escTxt(p.produktname)}</div>
       </div>`).join('') +
       `<div class="more-tile">${Math.max(rest,0)}+<br>mehr</div>`;
-    return `<div class="brand-row" onclick="openBrand('${b.marken_id}')" onmouseenter="prefetchBrand('${b.marken_id}')">
+    return `<div class="brand-row" onclick="openBrand('${b.marken_id}','${jsq(carry)}')" onmouseenter="prefetchBrand('${b.marken_id}')">
       <div class="brand-row-head">
         <div class="brand-row-id">
           ${brandLogoHtml(b)}
@@ -1038,9 +1267,12 @@ function renderBrands(){
           <button class="link-btn" onclick="event.stopPropagation();openContact('${b.marken_id}')">✉︎ Kontakt</button>
         </div>
         <div class="brand-row-meta">
-          <span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} Ø Laden-Provision</span>
-          <span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
-          <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>
+          ${isRegistered()
+            ? `<span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} Ø Laden-Provision</span>`
+            : `<span class="prov-badge" data-tip="${esc(TIP.provlocked)}">🔒 Ø Laden-Provision nach Registrierung</span>`}
+          ${loadingStrip ? '<span class="meta-pill">Produkte laden …</span>'
+            : `<span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
+          <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>`}
         </div>
       </div>
       <div class="brand-strip">${cells}</div>
@@ -1051,26 +1283,31 @@ function renderBrands(){
 /* ============================================================
    Brand modal
    ============================================================ */
-function openBrand(id){
+function openBrand(id, carry){
   activeBrand = dataProvider.getBrands().find(b => b.marken_id === id);
   activeCat = 'Alle';
-  document.getElementById('prodSearch').value = '';
+  // Such-Keyword aus der Marken-Suche übernehmen, damit die getroffenen Produkte sichtbar bleiben
+  document.getElementById('prodSearch').value = carry || '';
   document.getElementById('mLogo').outerHTML =
     brandLogoHtml(activeBrand).replace('class="brand-logo "','class="brand-logo" id="mLogo"');
   document.getElementById('mName').textContent = activeBrand.name;
   document.getElementById('mTag').textContent = activeBrand.kurzbeschreibung || '';
   document.getElementById('mMeta').innerHTML = `
-    <span class="meta-chip" data-tip="${esc(TIP.prov)}">Ø Laden-Provision <b>${provLabel(activeBrand)}</b></span>
+    ${isRegistered()
+      ? `<span class="meta-chip" data-tip="${esc(TIP.prov)}">Ø Laden-Provision <b>${provLabel(activeBrand)}</b></span>`
+      : `<span class="meta-chip" data-tip="${esc(TIP.provlocked)}">🔒 Ø Laden-Provision <b>nach Registrierung</b></span>`}
     <span class="meta-chip" data-tip="${esc(TIP.avg)}">Ø Warenkorb <b>${eur(activeBrand.avgCart)}</b></span>
     <span class="meta-chip" data-tip="${esc(TIP.count)}">${activeBrand.productCount} Produkte</span>
     <div class="modal-actions">
       ${activeBrand.website ? `<a class="btn btn-ghost" href="${esc(activeBrand.website)}" target="_blank" rel="noopener">Website ➜</a>` : ''}
-      <button class="btn btn-ghost" onclick="openContact('${activeBrand.marken_id}')">✉︎ Marke kontaktieren</button>
+      <button class="btn btn-ghost" onclick="openContact('${activeBrand.marken_id}')">✉︎ Lieferant kontaktieren</button>
     </div>`;
-  // Kategorien nach Häufigkeit, auf max. 15 begrenzt
+  // Kategorien: die 15 häufigsten auswählen, dann alphabetisch (A–Z) anzeigen
   const _catCount = {};
   dataProvider.getProducts(id).forEach(p => { if(p.kategorie) _catCount[p.kategorie] = (_catCount[p.kategorie]||0)+1; });
-  const _topCats = Object.keys(_catCount).sort((a,b)=>_catCount[b]-_catCount[a]).slice(0,15);
+  const _topCats = Object.keys(_catCount)
+    .sort((a,b)=>_catCount[b]-_catCount[a]).slice(0,15)
+    .sort((a,b)=>a.localeCompare(b,'de'));
   const cats = ['Alle', ..._topCats];
   document.getElementById('mCats').innerHTML = cats.map((c,i) =>
     `<button class="cat-pill ${i===0?'active':''}" onclick="setCat(this,${JSON.stringify(c).replace(/"/g,'&quot;')})">${escTxt(c)}</button>`).join('');
@@ -1091,10 +1328,16 @@ function setCat(el, c){
   renderProducts();
 }
 function renderProducts(){
-  const q = (document.getElementById('prodSearch').value||'').toLowerCase();
+  const M = makeMatcher(document.getElementById('prodSearch').value);
   let ps = dataProvider.getProducts(activeBrand.marken_id);
   if(activeCat !== 'Alle') ps = ps.filter(p => p.kategorie === activeCat);
-  if(q) ps = ps.filter(p => (p.produktname||'').toLowerCase().includes(q));
+  if(M.active) ps = ps.filter(p => M.test(p.produktname));
+  // Reihenfolge: Treffer des aktiven Branchen-Filters zuerst, dann Featured (Hero), dann nach Position.
+  ps = ps.slice().sort((a,b)=>{
+    const ca = matchesActiveFilter(a)?0:1, cb = matchesActiveFilter(b)?0:1; if(ca!==cb) return ca-cb;
+    const fa = a.featured?0:1, fb = b.featured?0:1; if(fa!==fb) return fa-fb;
+    return (a.position==null?9999:a.position) - (b.position==null?9999:b.position);
+  });
   const grid = document.getElementById('prodGrid');
   if(!ps.length){ grid.innerHTML = '<div class="no-results">Keine Produkte gefunden.</div>'; return; }
   grid.innerHTML = ps.map(p => {
@@ -1113,7 +1356,9 @@ function renderProducts(){
                <span class="uvp" data-tip="${esc(TIP.uvp)}">${eur(p.uvp_preis)}</span>
                <span class="uvp-l">UVP</span>
              </div>
-             <span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % = ${eur(marge)} Marge</span>`
+             ${isRegistered()
+               ? `<span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % = ${eur(marge)} Marge</span>`
+               : `<span class="prod-margin" style="background:var(--bg);color:var(--muted)" data-tip="${esc(TIP.provlocked)}">🔒 Ø Laden-Provision nach Registrierung</span>`}`
           : `<div class="prod-price"><span class="uvp-l">Preis auf Anfrage</span></div>`}
         <button class="prod-btn ${inCart?'in':''}" onclick="event.stopPropagation();toggleCart('${p.produkt_id}')">
           ${inCart?'✓ In Anfrage':'+ Zur Anfrage'}</button>
@@ -1157,8 +1402,9 @@ function openProduct(id){
   else { desc.textContent = 'Produktbeschreibung folgt …'; desc.classList.add('pd-desc-ph'); }
   if(p.uvp_preis > 0){
     document.getElementById('pdPrice').textContent = eur(p.uvp_preis);
-    document.getElementById('pdMargin').innerHTML =
-      `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf</span><span>= ${p.provision_prozent} % Provision</span>`;
+    document.getElementById('pdMargin').innerHTML = isRegistered()
+      ? `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf</span><span>= ${p.provision_prozent} % Provision</span>`
+      : `<span style="font-weight:700;color:var(--muted)" data-tip="${esc(TIP.provlocked)}">🔒 Ø Laden-Provision<br>nach Registrierung</span>`;
   } else {
     document.getElementById('pdPrice').textContent = 'Preis auf Anfrage';
     document.getElementById('pdMargin').innerHTML = '';
@@ -1246,23 +1492,28 @@ function renderCart(){
   if(!items.length){
     body.innerHTML = `<div class="cart-empty"><div class="big">🛒</div>
       <strong>Noch nichts ausgewählt</strong>
-      <p style="font-size:13px;margin-top:6px">Öffne eine Marke und füge Produkte hinzu —
-      hier kalkulierst du deine Marge und fragst die Marken anschließend an.</p></div>`;
+      <p style="font-size:13px;margin-top:6px">Öffne einen Lieferanten und füge Produkte hinzu —
+      hier kalkulierst du deine Marge und fragst die Lieferanten anschließend an.</p>
+      ${myRequests.length?`<button class="btn btn-ghost" style="margin-top:16px" onclick="openRequestsOverview()">📋 Meine Anfragen ansehen (${myRequests.length})</button>`:''}</div>`;
     foot.innerHTML = ''; return;
   }
-  body.innerHTML = `
+  const toggle = `
+    <div class="calc-toggle">
+      <span class="info-ic" data-tip="${esc(TIP.calc)}">i</span>
+      <span>🧮 Margen-Rechner <span class="ct-sub">${calcOn?'an — nur Schätzung':'aus'}</span></span>
+      <span class="sw"><input type="checkbox" id="calcSw" ${calcOn?'checked':''} onchange="toggleCalc(this.checked)">
+        <label for="calcSw"></label></span>
+    </div>`;
+  const bulk = calcOn ? `
     <div class="bulk">
       <span>Verkäufe / Monat für alle:</span>
       <input type="number" id="bulkQty" value="10" min="0">
       <button onclick="setAllQty()">übernehmen</button>
-    </div>` +
+    </div>` : '';
+  const linesHtml =
     items.map(c => {
       const lineMargin = marginOf(c.product) * c.qty;
-      return `<div class="cart-line">
-        <div class="cart-thumb">${cartThumb(c.product,c.brand)}</div>
-        <div class="cart-line-main">
-          <div class="cart-line-name">${escTxt(c.product.produktname)}</div>
-          <div class="cart-line-brand">${escTxt(c.brand.name)} · ${eur(c.product.uvp_preis)} UVP · ${c.product.provision_prozent} %</div>
+      const foot = calcOn ? `
           <div class="cart-line-foot">
             <div class="stepper">
               <button onclick="stepQty('${c.product.produkt_id}',-1)">−</button>
@@ -1271,30 +1522,39 @@ function renderCart(){
             </div>
             <span class="stepper-l">/ Monat</span>
             <button class="line-x" onclick="toggleCart('${c.product.produkt_id}')">entfernen</button>
-          </div>
+          </div>`
+        : `<div class="cart-line-foot"><button class="line-x" onclick="toggleCart('${c.product.produkt_id}')">entfernen</button></div>`;
+      const margin = calcOn ? `<div class="cart-line-margin"><div class="m">+${eur(lineMargin)}</div><div class="ml">/ Monat</div></div>` : '';
+      return `<div class="cart-line">
+        <div class="cart-thumb">${cartThumb(c.product,c.brand)}</div>
+        <div class="cart-line-main">
+          <div class="cart-line-name">${escTxt(c.product.produktname)}</div>
+          <div class="cart-line-brand">${escTxt(c.brand.name)} · ${eur(c.product.uvp_preis)} UVP · ${effProv(c.product)} %${isRegistered()?'':' (Demo)'}</div>
+          ${foot}
         </div>
-        <div class="cart-line-margin">
-          <div class="m">+${eur(lineMargin)}</div><div class="ml">/ Monat</div>
-        </div>
+        ${margin}
       </div>`;
     }).join('');
   const t = cartTotals();
   const brandCount = new Set(items.map(c => c.brand.marken_id)).size;
-  const effProv = t.revenue>0 ? Math.round(t.margin/t.revenue*100) : 0;
-  foot.innerHTML = `
+  const avgProvPct = t.revenue>0 ? Math.round(t.margin/t.revenue*100) : 0;
+  const calcBox = calcOn ? `
+    ${!isRegistered() ? `<div class="calc-hint" style="background:var(--accent-soft);color:#1f3d33;padding:9px 11px;border-radius:8px;margin-bottom:10px">ℹ︎ Du bist noch nicht registriert — wir rechnen vereinfacht mit ${DEMO_PROV} %. Nach der kostenlosen Registrierung siehst du die echten Provisionen und Margen.</div>` : ''}
     <div class="calc-box">
       <div class="calc-row"><span data-tip="${esc(TIP.units)}">Verkäufe / Monat</span><span>${t.units} Stück</span></div>
       <div class="calc-row"><span data-tip="${esc(TIP.revenue)}">Umsatz / Monat (UVP)</span><span>${eur(t.revenue)}</span></div>
-      <div class="calc-row"><span data-tip="${esc(TIP.avgprov)}">Ø Laden-Provision</span><span>${effProv} %</span></div>
+      <div class="calc-row"><span data-tip="${esc(TIP.prov)}">Ø Laden-Provision <span class="info-ic" data-tip="${esc(TIP.prov)}">i</span></span><span>${avgProvPct} %</span></div>
       <div class="calc-row total"><span data-tip="${esc(TIP.netmargin)}">Deine Netto-Marge / Monat</span>
         <span class="big">${eur(t.margin)}</span></div>
       <div class="calc-row"><span>Hochgerechnet / Jahr</span><span><b>${eur(t.margin*12)}</b></span></div>
-    </div>
-    ${profileStatusLine()}
-    <button class="btn btn-primary req-cta" onclick="requestFlow()">
-      ✉︎ ${brandCount} ${brandCount===1?'Marke':'Marken'} anfragen</button>
-    <div class="calc-hint">⚠︎ Richtwert, noch nicht verbindlich: Die angezeigten Provisionen/Margen sind die von den Marken angegebenen Richtwerte. Deine genaue Marge wird erst im Gespräch mit der jeweiligen Marke final festgelegt — je nach Lage und Handelsvolumen ist mehr verhandelbar.</div>`;
+    </div>` : '';
+  body.innerHTML = toggle + bulk + linesHtml + calcBox;
+  foot.innerHTML = profileStatusLine() +
+    `<button class="btn btn-primary req-cta" onclick="requestFlow()">
+      ✉︎ ${brandCount} ${brandCount===1?'Lieferant':'Lieferanten'} anfragen</button>
+    <div class="calc-hint">Das ist eine unverbindliche Anfrage. Die Marke kann Konditionen anpassen oder absagen.</div>`;
 }
+function toggleCalc(on){ calcOn = !!on; renderCart(); }
 
 /* ============================================================
    Anfrage-Flow (Demo: noch kein DB-Schreiben)
@@ -1318,18 +1578,19 @@ function openRequest(){
     `<div class="vstatus ok">✓ Registrierter Händler${p.name?' · '+escTxt(p.name):''}${p.addr?' · '+escTxt(p.addr):''}
      <div style="font-weight:400;margin-top:2px">Dein Händler-Profil wird der Anfrage beigelegt.</div></div>`;
   document.getElementById('reqIntro').textContent =
-    `Du fragst ${groups.length} ${groups.length===1?'Marke':'Marken'} zu insgesamt `+
-    `${items.length} Produkten an. Deine Anfrage geht zuerst an das Spreat-Team zur Prüfung.`;
+    `Du fragst ${groups.length} ${groups.length===1?'Lieferant':'Lieferanten'} zu insgesamt `+
+    `${items.length} ${items.length===1?'Produkt':'Produkten'} an. Das ist eine unverbindliche Anfrage, keine Produktbestellung.`;
   document.getElementById('reqSummary').innerHTML = groups.map(g => `
     <div class="req-brand">
       <div class="req-brand-head">${brandLogoHtml(g.brand)}<div class="req-brand-name">${escTxt(g.brand.name)}</div></div>
       ${g.list.map(c => `<div class="req-prod">
         <span>${escTxt(c.product.produktname)}</span>
-        <span class="q">ca. ${c.qty} Stk / Monat</span></div>`).join('')}
+        ${calcOn ? `<span class="q">ca. ${c.qty} Stk / Monat</span>` : ''}</div>`).join('')}
     </div>`).join('');
   document.getElementById('reqMsg').value = '';
+  document.getElementById('reqPopupTitle').textContent = 'Lieferanten anfragen';
   document.getElementById('reqSubmitBtn').textContent =
-    `${groups.length} ${groups.length===1?'Marke':'Marken'} anfragen`;
+    `${groups.length} ${groups.length===1?'Lieferant':'Lieferanten'} anfragen`;
   document.getElementById('reqForm').style.display = '';
   document.getElementById('reqOk').style.display = 'none';
   document.getElementById('overlay').classList.add('open');
@@ -1353,9 +1614,31 @@ async function sendRequest(){
     err.style.display = '';
     return;
   }
+  // Snapshot für die Anfrageübersicht bauen (vor dem Leeren des Warenkorbs)
+  const byBrand = {};
+  Object.values(cart).forEach(c => {
+    (byBrand[c.brand.marken_id] = byBrand[c.brand.marken_id] || {name:c.brand.name, list:[]})
+      .list.push({name:c.product.produktname, qty:c.qty});
+  });
+  const prodCount = Object.keys(cart).length;
+  myRequests.unshift({
+    ts: Date.now(),
+    nachricht: document.getElementById('reqMsg').value || '',
+    groups: Object.values(byBrand),
+    brandCount: reqGroupCount,
+    prodCount
+  });
+  // Warenkorb leeren – Produkte sollen nach der Anfrage verschwinden
+  cart = {};
+  updateFab();
+  renderCart();
   document.getElementById('reqForm').style.display = 'none';
+  document.getElementById('reqPopupTitle').textContent = '';
   document.getElementById('reqOkTitle').textContent =
-    `Anfrage an ${reqGroupCount} ${reqGroupCount===1?'Marke':'Marken'} übermittelt`;
+    `${prodCount} ${prodCount===1?'Produkt':'Produkte'} erfolgreich angefragt`;
+  document.getElementById('reqOkBody').textContent =
+    `Anfrage an ${reqGroupCount} ${reqGroupCount===1?'Lieferant':'Lieferanten'} übermittelt. `+
+    `Spreat bearbeitet die Anfrage und leitet sie an ${reqGroupCount===1?'den Lieferanten':'die Lieferanten'} weiter.`;
   document.getElementById('reqOk').style.display = '';
 }
 function closeRequest(){
@@ -1363,9 +1646,144 @@ function closeRequest(){
   if(!document.getElementById('drawer').classList.contains('open'))
     document.getElementById('overlay').classList.remove('open');
 }
+/* ---- Ablauf-Timeline (Variante A) ---- */
+const FLOW_STEPS = [
+  {t:'Interessante Produkte auswählen', d:'Stöbere durch geprüfte Lieferanten und leg dir die Produkte in deine Sortiments-Anfrage, die zu deinem Laden passen.'},
+  {t:'Grobe ⌀ Marge errechnen', d:'Der Margenrechner schätzt unverbindlich, was pro Monat hängenbleiben könnte. Reine Kalkulationshilfe, die Zahlen gehen nicht an die Lieferanten.'},
+  {t:'Anfrage auslösen', d:'Mit einem Klick fragst du alle gewählten Lieferanten gebündelt an. Unverbindlich, ohne Kaufverpflichtung.'},
+  {t:'Zeitnahe Rückmeldung vom Lieferanten', d:'Spreat prüft deine Anfrage und leitet sie weiter. Der Lieferant meldet sich in der Regel innerhalb weniger Werktage.'},
+  {t:'Registrierung auf der Spreat-Plattform', d:'Du legst einmalig dein kostenloses Händler-Profil an und schaltest damit die echten Provisionen frei.'},
+  {t:'Provision & Liefermenge klären', d:'Auf der Plattform stimmst du mit dem Lieferanten die Provision und die Liefermenge final ab.'},
+  {t:'Produkte werden geliefert', d:'Die Ware kommt in deinen Laden. Keine Vorkasse, keine Kapitalbindung.'},
+  {t:'Provision bei jedem Verkauf', d:'Du verdienst bei jedem Verkauf. Kein Warenrisiko: Unverkauftes geht zurück oder wird nach Absprache entsorgt.'},
+];
+let flowActive = 0;
+function renderFlow(){
+  const steps = document.getElementById('flowSteps'); if(!steps) return;
+  steps.innerHTML = FLOW_STEPS.map((s,i)=>`
+    <div class="flow-step ${i===flowActive?'active':''}" onmouseenter="flowShow(${i})" onclick="flowShow(${i})">
+      <div class="flow-num">${i+1}</div>
+      <div class="flow-label">${escTxt(s.t)}</div>
+    </div>`).join('');
+  flowShow(flowActive);
+}
+function flowShow(i){
+  flowActive = i;
+  const cap = document.getElementById('flowCaption');
+  if(cap) cap.innerHTML = `<b>Schritt ${i+1} — ${escTxt(FLOW_STEPS[i].t.replace('*',''))}:</b> ${escTxt(FLOW_STEPS[i].d)}`;
+  document.querySelectorAll('#flowSteps .flow-step').forEach((el,idx)=>el.classList.toggle('active', idx===i));
+}
+function openFlowPopup(){
+  document.getElementById('vflowBody').innerHTML = FLOW_STEPS.map((s,i)=>`
+    <div class="vflow-step"><div class="vflow-num">${i+1}</div>
+      <div class="vflow-txt"><div class="vflow-t">${escTxt(s.t.replace('*',''))}</div>
+        <div class="vflow-d">${escTxt(s.d)}</div></div></div>`).join('');
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('flowPopup').classList.add('open');
+}
+function closeFlowPopup(){
+  document.getElementById('flowPopup').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+/* ---- Mobiles Menü ---- */
+function openNavMenu(){
+  let h = '';
+  if(session.loggedIn){
+    h += `<div class="navsheet-acct">✓ ${escTxt(session.email)}</div>`;
+    h += `<button onclick="closeNavMenu();openProfileEdit()">👤 Profil &amp; meine Anfragen</button>`;
+  }
+  h += `<button onclick="closeNavMenu();openCart()">🛒 Meine Sortiments-Anfrage</button>`;
+  h += `<button onclick="closeNavMenu();openFaq()">❓ FAQ</button>`;
+  if(session.loggedIn){
+    h += `<button onclick="closeNavMenu();logout()">↩︎ Abmelden</button>`;
+  } else {
+    h += `<button onclick="closeNavMenu();openProfile()">📝 Registrieren</button>`;
+    h += `<button onclick="closeNavMenu();openLogin()">→ Login</button>`;
+  }
+  document.getElementById('navMenuBody').innerHTML = h;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('navMenu').classList.add('open');
+}
+function closeNavMenu(){
+  document.getElementById('navMenu').classList.remove('open');
+  if(!document.getElementById('drawer').classList.contains('open'))
+    document.getElementById('overlay').classList.remove('open');
+}
+/* ---- FAQ ---- */
+function openFaq(){
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('faqPopup').classList.add('open');
+}
+function closeFaq(){
+  document.getElementById('faqPopup').classList.remove('open');
+  if(!document.getElementById('drawer').classList.contains('open') &&
+     !document.getElementById('brandModal').classList.contains('open'))
+    document.getElementById('overlay').classList.remove('open');
+}
+/* ---- Anfrageübersicht ---- */
+function openRequestsOverview(){
+  renderRequestsOverview();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('requestsPopup').classList.add('open');
+}
+function renderRequestsOverview(){
+  const body = document.getElementById('requestsBody');
+  if(!myRequests.length){
+    body.innerHTML = `<div class="cart-empty" style="padding:36px 10px">
+      <div class="big">📋</div><strong>Noch keine Anfragen</strong>
+      <p style="font-size:13px;margin-top:6px">Sobald du Lieferanten anfragst, erscheinen sie hier.</p></div>`;
+    return;
+  }
+  body.innerHTML = myRequests.map(r => {
+    const d = new Date(r.ts).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const groups = r.groups.map(g => `
+      <div class="req-brand">
+        <div class="req-brand-head"><div class="req-brand-name">${escTxt(g.name)}</div></div>
+        ${g.list.map(p => `<div class="req-prod"><span>${escTxt(p.name)}</span>${p.qty?`<span class="q">ca. ${p.qty} Stk / Monat</span>`:''}</div>`).join('')}
+      </div>`).join('');
+    return `<div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+        ${d} · ${r.prodCount} ${r.prodCount===1?'Produkt':'Produkte'} · ${r.brandCount} ${r.brandCount===1?'Lieferant':'Lieferanten'}</div>
+      <div class="req-summary">${groups}</div>
+      ${r.nachricht?`<div class="cc-note" style="margin-top:8px">📝 ${escTxt(r.nachricht)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function closeRequestsOverview(){
+  document.getElementById('requestsPopup').classList.remove('open');
+  if(!document.getElementById('drawer').classList.contains('open'))
+    document.getElementById('overlay').classList.remove('open');
+}
+
+/* ---- Branche (Mehrfachauswahl) ---- */
+const BRANCHES = ['Concept Store / Geschenke','Drogerie, Kosmetik & Beauty','Parfümerie',
+  'Apotheke / Sanitätshaus','Reformhaus / Bio & Nachhaltigkeit','Lebensmittel & Feinkost',
+  'Getränke & Spirituosen','Bäckerei / Café / Konditorei','Hotel & Gastronomie',
+  'Tankstelle / Kiosk / Convenience','Mode & Accessoires','Schuhe & Lederwaren','Schmuck & Uhren',
+  'Sport, Outdoor & Fahrrad','Spielwaren & Modellbau','Baby & Kind','Buch, Schreibwaren & Papeterie',
+  'Haushalt, Küche & Wohnen','Möbel & Einrichtung / Deko','Elektronik & Technik',
+  'Bau-, Garten- & Heimwerkermarkt','Blumen / Floristik','Tierbedarf / Zoofachhandel',
+  'Friseur / Barber / Kosmetikstudio','Souvenir & Tourismus','Sonstiges'];
+let selectedBranches = new Set();
+let profileEditMode = false;
+function renderBranchChips(){
+  const c = document.getElementById('pfBranchChips'); if(!c) return;
+  c.innerHTML = BRANCHES.map(b =>
+    `<button type="button" class="bchip ${selectedBranches.has(b)?'active':''}" onclick="toggleBranch('${jsq(b)}')">${escTxt(b)}</button>`).join('');
+}
+function toggleBranch(b){ if(selectedBranches.has(b)) selectedBranches.delete(b); else selectedBranches.add(b); renderBranchChips(); }
+function setProfileBranches(str){ selectedBranches = new Set(String(str||'').split(',').map(s=>s.trim()).filter(Boolean)); renderBranchChips(); }
 
 /* ---- Registrierung / Händler-Profil ---- */
 function openProfile(){
+  profileEditMode = false;
+  selectedBranches = new Set(); renderBranchChips();
+  document.getElementById('pfReqWrap').style.display = 'none';
+  document.getElementById('pfSubmitBtn').textContent = 'Registrieren';
+  document.getElementById('pfIntro').innerHTML = 'Mit deinem kostenlosen Händler-Profil siehst du die '+
+    'durchschnittlichen Laden-Provisionen und kannst Lieferanten anfragen. Deine E-Mail ist zugleich dein '+
+    'Login. Je aussagekräftiger dein Profil (Lage, Filialen, Handelsvolumen), desto höher die Chance, dass '+
+    'die Marke zusagt und eine gute Provision für dich herauskommt.';
   document.getElementById('pfForm').style.display = '';
   document.getElementById('pfVerify').style.display = 'none';
   document.getElementById('pfErr').style.display = 'none';
@@ -1378,7 +1796,7 @@ function openProfile(){
 function collectProfile(){
   return {
     name:gv('pfName'), role:gv('pfRole'), phone:gv('pfPhone'), email:gv('pfEmail'),
-    branch:gv('pfBranch'), stores:gv('pfStores'), volume:gv('pfVolume'), addr:gv('pfAddr')
+    branch:[...selectedBranches].join(', '), stores:gv('pfStores'), volume:gv('pfVolume'), addr:gv('pfAddr')
   };
 }
 function validateProfile(p){
@@ -1387,8 +1805,9 @@ function validateProfile(p){
   if(!p.phone) return 'Bitte eine Telefonnummer eingeben.';
   if(!p.email) return 'Bitte eine E-Mail-Adresse eingeben.';
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) return 'Bitte eine gültige E-Mail-Adresse eingeben.';
+  if(!p.branch) return 'Bitte mindestens einen Sortimentsschwerpunkt wählen.';
   if(!p.stores || parseInt(p.stores) < 1) return 'Bitte die Anzahl der Filialen eingeben (mindestens 1).';
-  if(!p.addr) return 'Bitte die Adresse des Ladenlokals eingeben.';
+  if(!p.addr) return 'Bitte die Geschäftsadresse eingeben.';
   return null;
 }
 async function saveProfile(){
@@ -1427,9 +1846,9 @@ async function submitProfile(){
     const ok = await saveProfile();
     btn.disabled = false; btn.textContent = 'Registrieren';
     if(!ok){ err.textContent = 'Profil konnte nicht gespeichert werden. Bitte erneut versuchen.'; err.style.display=''; return; }
-    renderAuth(); renderCart();
+    renderAuth(); renderCart(); if(_brands) renderBrands();
     document.getElementById('profilePopup').classList.remove('open');
-    openRequest();
+    if(profileEditMode){ profileEditMode = false; } else { openRequest(); }
     return;
   }
   // Nicht eingeloggt -> Code an die angegebene E-Mail senden
@@ -1460,7 +1879,7 @@ async function confirmProfileCode(){
   const ok = await saveProfile();
   btn.disabled = false; btn.textContent = 'Bestätigen & anmelden';
   if(!ok){ err.textContent = 'Angemeldet — aber das Profil-Speichern ist fehlgeschlagen. Bitte erneut versuchen.'; err.style.display=''; return; }
-  renderAuth(); renderCart();
+  renderAuth(); renderCart(); if(_brands) renderBrands();
   document.getElementById('profilePopup').classList.remove('open');
   openRequest();
 }
@@ -1468,6 +1887,27 @@ function closeProfile(){
   document.getElementById('profilePopup').classList.remove('open');
   if(!document.getElementById('drawer').classList.contains('open'))
     document.getElementById('overlay').classList.remove('open');
+}
+function openProfileEdit(){
+  profileEditMode = true;
+  const p = session.profile || {};
+  document.getElementById('pfName').value = p.name || '';
+  document.getElementById('pfRole').value = p.role || '';
+  document.getElementById('pfPhone').value = p.phone || '';
+  document.getElementById('pfEmail').value = p.email || session.email || '';
+  setProfileBranches(p.branch || '');
+  document.getElementById('pfStores').value = p.stores || '';
+  if(p.volume) document.getElementById('pfVolume').value = p.volume;
+  document.getElementById('pfAddr').value = p.addr || '';
+  document.getElementById('pfIntro').innerHTML = 'Dein Händler-Profil — du kannst es jederzeit anpassen. '+
+    'Unten findest du außerdem deine bisherigen Anfragen.';
+  document.getElementById('pfReqWrap').style.display = '';
+  document.getElementById('pfSubmitBtn').textContent = 'Änderungen speichern';
+  document.getElementById('pfForm').style.display = '';
+  document.getElementById('pfVerify').style.display = 'none';
+  document.getElementById('pfErr').style.display = 'none';
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('profilePopup').classList.add('open');
 }
 
 /* ============================================================
@@ -1483,11 +1923,11 @@ async function verifyEmailCode(email, code){
 function renderAuth(){
   const a = document.getElementById('authArea');
   if(session.loggedIn){
-    a.innerHTML = `<span class="verify-chip vc-verified"><span class="dot2"></span>${escTxt(session.email)}</span>
-      <button class="link-btn" onclick="logout()">Abmelden</button>`;
+    a.innerHTML = `<button class="acct-chip" onclick="openProfileEdit()" title="Profil &amp; Anfragen ansehen"><span class="dot2"></span>${escTxt(session.email)}</button>
+      <button class="nav-link" onclick="logout()">Abmelden</button>`;
   } else {
-    a.innerHTML = `<button class="link-btn" onclick="openProfile()">Registrieren</button>
-      <button class="link-btn" onclick="openLogin()">Login</button>`;
+    a.innerHTML = `<button class="nav-link" onclick="openProfile()">Registrieren</button>
+      <button class="nav-link" onclick="openLogin()">Login</button>`;
   }
 }
 function openLogin(){
@@ -1532,7 +1972,8 @@ async function confirmLoginCode(){
   session.loggedIn = true;
   session.email = data.user.email;
   await loadProfile(data.user.id);
-  renderAuth(); renderCart();
+  await loadMyRequests();
+  renderAuth(); renderCart(); if(_brands) renderBrands();
   document.getElementById('lgVerify').style.display = 'none';
   document.getElementById('lgOkMail').textContent = 'Angemeldet als ' + session.email;
   document.getElementById('lgOk').style.display = '';
@@ -1540,7 +1981,8 @@ async function confirmLoginCode(){
 async function logout(){
   await sb.auth.signOut();
   session = {loggedIn:false, email:null, profile:null};
-  renderAuth(); renderCart();
+  myRequests = [];
+  renderAuth(); renderCart(); if(_brands) renderBrands();
 }
 function closeLogin(){
   document.getElementById('loginPopup').classList.remove('open');
@@ -1557,14 +1999,38 @@ async function loadProfile(userId){
     };
   }
 }
+async function loadMyRequests(){
+  myRequests = [];
+  try{
+    const {data,error} = await sb.from('requests')
+      .select('id,nachricht,status,created_at,request_items(produkt_id,menge_pro_monat)')
+      .order('created_at',{ascending:false});
+    if(error || !data) return;
+    myRequests = data.map(r => {
+      const byBrand = {};
+      (r.request_items||[]).forEach(it => {
+        const p = findProduct(it.produkt_id);
+        const brand = p ? dataProvider.getBrands().find(b=>b.marken_id===p.marken_id) : null;
+        const bid = brand ? brand.marken_id : (p ? p.marken_id : it.produkt_id);
+        (byBrand[bid] = byBrand[bid] || {name: brand?brand.name:'Lieferant', list:[]})
+          .list.push({name: p?p.produktname:it.produkt_id, qty: it.menge_pro_monat});
+      });
+      const groups = Object.values(byBrand);
+      return {ts:new Date(r.created_at).getTime(), nachricht:r.nachricht||'',
+        groups, brandCount:groups.length, prodCount:(r.request_items||[]).length};
+    });
+  }catch(e){ /* RLS/Netz -> still leer, In-Session-Anfragen bleiben */ }
+}
 async function restoreSession(){
   const {data} = await sb.auth.getSession();
   if(data && data.session){
     session.loggedIn = true;
     session.email = data.session.user.email;
     await loadProfile(data.session.user.id);
+    await loadMyRequests();
   }
   renderAuth();
+  if(_brands) renderBrands();
 }
 
 /* ---- Kontakt einzelne Marke ---- */
@@ -1616,7 +2082,7 @@ function openCart(){
   document.getElementById('drawer').classList.add('open');
 }
 function closeAll(fromPop){
-  ['overlay','brandModal','drawer','contactPopup','requestPopup','profilePopup','loginPopup','productPopup']
+  ['overlay','brandModal','drawer','contactPopup','requestPopup','requestsPopup','faqPopup','flowPopup','navMenu','profilePopup','loginPopup','productPopup']
     .forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('open'); });
   document.body.classList.remove('shopview');
   if(!fromPop && new URLSearchParams(location.search).get('marke')) history.pushState({},'',location.pathname);
@@ -1658,17 +2124,25 @@ document.addEventListener('mouseover', e => {
   curTip = t;
   if(t) showTip(t); else tipEl.classList.remove('show');
 });
-document.addEventListener('mousedown', () => tipEl.classList.remove('show'));
+// Touch/Klick: ohne Hover (Mobil) zeigt ein Tipp auf das (i)/Element den Text; Klick woanders schließt ihn.
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tip]');
+  if(t){ e.stopPropagation(); showTip(t); curTip = t; }
+  else { tipEl.classList.remove('show'); curTip = null; }
+}, true);
 
 /* ---- Init ---- */
 async function init(){
   const fy = document.getElementById('footYear'); if(fy) fy.textContent = new Date().getFullYear();
+  renderFlow();
   renderAuth();
   try {
-    await dataProvider.load();
-    buildTaxo();
-    renderFilterBar();
-    renderBrands();
+    // Phase 1: Marken sofort rendern (Seite ist da, bevor die tausenden Produkte geladen sind)
+    await dataProvider.loadBrands();
+    buildTaxo(); renderFilterBar(); renderBrands();
+    // Phase 2: Produkte nachladen, dann Strips/Zähler/Filter füllen
+    await dataProvider.loadProducts();
+    buildTaxo(); renderFilterBar(); renderBrands();
     { const m=new URLSearchParams(location.search).get('marke'); if(m && dataProvider.getBrands().some(b=>b.marken_id===m)) openBrand(m); }
   } catch(e){
     document.getElementById('brandGrid').innerHTML =
