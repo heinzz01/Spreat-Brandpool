@@ -163,6 +163,10 @@
   .modal-head .brand-logo{width:54px;height:54px;font-size:20px}
   .modal-title h2{font-size:20px;letter-spacing:-.02em}
   .modal-title p{color:var(--muted);font-size:13px}
+  .desc-clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .desc-open{display:block;-webkit-line-clamp:unset;overflow:visible}
+  .desc-more{display:inline-block;margin-top:3px;background:none;border:none;padding:0;
+    color:var(--green);font-weight:700;font-size:12.5px;cursor:pointer}
   .x-close{margin-left:auto;background:var(--bg);width:34px;height:34px;border-radius:9px;
     font-size:16px;color:var(--muted);flex-shrink:0}
   .x-close:hover{background:#eef0f3}
@@ -1288,6 +1292,25 @@ function renderBrands(){
 /* ============================================================
    Brand modal
    ============================================================ */
+// Marken-Beschreibung im Modal: lange `beschreibung` bevorzugen (3-Zeilen-Klemmung + Mehr/Weniger),
+// sonst Fallback auf die kurze `kurzbeschreibung`. Die Marken-Liste nutzt weiterhin kurzbeschreibung.
+function renderBrandDesc(b){
+  const wrap = document.getElementById('mTag');
+  const txt = (b.beschreibung && b.beschreibung.trim()) ? b.beschreibung.trim() : (b.kurzbeschreibung || '');
+  wrap.innerHTML = `<span class="desc-clamp">${escTxt(txt)}</span>`;
+  const el = wrap.firstElementChild;
+  // Erst nach dem Öffnen (Modal display:flex) messen, ob der Text über 3 Zeilen geht.
+  // setTimeout statt requestAnimationFrame: rAF ist in Hintergrund-Tabs pausiert.
+  setTimeout(() => {
+    if(el.isConnected && el.scrollHeight - el.clientHeight > 4){
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'desc-more'; btn.textContent = 'mehr';
+      const toggle = () => { const open = el.classList.toggle('desc-open'); btn.textContent = open ? 'weniger' : 'mehr'; };
+      btn.onclick = toggle; el.style.cursor = 'pointer'; el.onclick = toggle;
+      wrap.appendChild(btn);
+    }
+  });
+}
 function openBrand(id, carry){
   activeBrand = dataProvider.getBrands().find(b => b.marken_id === id);
   activeCat = 'Alle';
@@ -1296,7 +1319,7 @@ function openBrand(id, carry){
   document.getElementById('mLogo').outerHTML =
     brandLogoHtml(activeBrand).replace('class="brand-logo "','class="brand-logo" id="mLogo"');
   document.getElementById('mName').textContent = activeBrand.name;
-  document.getElementById('mTag').textContent = activeBrand.kurzbeschreibung || '';
+  renderBrandDesc(activeBrand);
   document.getElementById('mMeta').innerHTML = `
     ${isRegistered()
       ? `<span class="meta-chip" data-tip="${esc(TIP.prov)}">Ø Laden-Provision <b>${provLabel(activeBrand)}</b></span>`
