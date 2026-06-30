@@ -1044,7 +1044,7 @@ const TIP = {
   prov:'Ø Laden-Provision = der Anteil am Verkaufspreis, den die Marke bereit ist dir als Marge zu überlassen. Das ist ein Richtwert, kein Fixwert und kann dementsprechend noch variieren: Je besser deine Lage und je höher dein monatliches Handelsvolumen, desto mehr kannst du verlangen und nachverhandeln.',
   calc:'Der Margenrechner dient als Kalkulationshilfe: Die Verkäufe pro Monat sind hypothetisch und dienen nur deiner eigenen Margen-Schätzung. Diese Zahlen werden nicht an die Lieferanten übermittelt.',
   reqflow:'Deine Anfrage geht zuerst an das Spreat-Team. Wir prüfen sie und leiten sie an den Lieferanten weiter. Das ist KEINE verbindliche Produktbestellung.',
-  provlocked:'Du musst dich zuerst kostenlos als Händler registrieren, um die durchschnittlichen Laden-Provisionen und deine Margen zu sehen. Bis dahin rechnet der Rechner vereinfacht mit 30 %.',
+  provlocked:'Registriere dich kostenlos als Händler, um die echten Laden-Provisionen freizuschalten.',
   count:'Anzahl der Produkte dieses Lieferanten, die du in deine Sortiments-Anfrage aufnehmen kannst.',
   avg:'Durchschnittlicher Verkaufspreis (UVP) über alle Produkte dieses Lieferanten — grobe Orientierung pro Verkauf.',
   uvp:'UVP = unverbindliche Preisempfehlung. Zu diesem Preis verkaufst du das Produkt an deine Endkunden.',
@@ -1505,7 +1505,7 @@ function renderCart(){
   const toggle = `
     <div class="calc-toggle">
       <span class="info-ic" data-tip="${esc(TIP.calc)}">i</span>
-      <span>Margen-Rechner <span class="ct-sub">${calcOn?'an — nur Schätzung':'aus'}</span></span>
+      <span>Margen-Rechner <span class="ct-sub">${calcOn?'an — unverbindliche Kalkulation':'aus'}</span></span>
       <span class="sw"><input type="checkbox" id="calcSw" ${calcOn?'checked':''} onchange="toggleCalc(this.checked)">
         <label for="calcSw"></label></span>
     </div>`;
