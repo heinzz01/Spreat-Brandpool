@@ -137,6 +137,9 @@
   .btn[disabled]{opacity:.5;cursor:not-allowed}
   .prov-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-soft);color:var(--green);
     font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px}
+  .pl-val{display:inline-block;min-width:34px;border-radius:5px;color:transparent;user-select:none;
+    background:#bfe3d6;animation:plPulse 2.8s ease-in-out infinite;vertical-align:middle}
+  @keyframes plPulse{0%,100%{opacity:.55}50%{opacity:.9}}
   @media(max-width:760px){.brand-strip{grid-template-columns:repeat(3,1fr)}}
 
   .state-msg{padding:50px 20px;text-align:center;color:var(--muted);font-size:14px}
@@ -1017,6 +1020,8 @@ function effProv(p){ return isRegistered() ? (Number(p.provision_prozent)||0) : 
 const marginOf = p => p.uvp_preis * effProv(p) / 100;
 function provLabel(b){ return b.provision_min===b.provision_max
   ? b.provision_min+' %' : b.provision_min+'–'+b.provision_max+' %'; }
+// Locked-Provision-Teaser: echter Wert steht im Markup, ist aber per CSS unkenntlich (sanft pulsierender Balken).
+function provLocked(label){ return `Ø Laden-Provision <span class="pl-val">${label}</span> 🔒`; }
 // Such-Matcher: endet die Eingabe auf Leerzeichen -> exakte Wortgrenze ("auto " ≠ "automat").
 function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 function makeMatcher(rawValue){
@@ -1269,7 +1274,7 @@ function renderBrands(){
         <div class="brand-row-meta">
           ${isRegistered()
             ? `<span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} Ø Laden-Provision</span>`
-            : `<span class="prov-badge" data-tip="${esc(TIP.provlocked)}">🔒 Ø Laden-Provision nach Registrierung</span>`}
+            : `<span class="prov-badge" data-tip="${esc(TIP.provlocked)}">${provLocked(provLabel(b))}</span>`}
           ${loadingStrip ? '<span class="meta-pill">Produkte laden …</span>'
             : `<span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
           <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>`}
@@ -1295,7 +1300,7 @@ function openBrand(id, carry){
   document.getElementById('mMeta').innerHTML = `
     ${isRegistered()
       ? `<span class="meta-chip" data-tip="${esc(TIP.prov)}">Ø Laden-Provision <b>${provLabel(activeBrand)}</b></span>`
-      : `<span class="meta-chip" data-tip="${esc(TIP.provlocked)}">🔒 Ø Laden-Provision <b>nach Registrierung</b></span>`}
+      : `<span class="meta-chip" data-tip="${esc(TIP.provlocked)}">${provLocked(provLabel(activeBrand))}</span>`}
     <span class="meta-chip" data-tip="${esc(TIP.avg)}">Ø Warenkorb <b>${eur(activeBrand.avgCart)}</b></span>
     <span class="meta-chip" data-tip="${esc(TIP.count)}">${activeBrand.productCount} Produkte</span>
     <div class="modal-actions">
@@ -1358,7 +1363,7 @@ function renderProducts(){
              </div>
              ${isRegistered()
                ? `<span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % = ${eur(marge)} Marge</span>`
-               : `<span class="prod-margin" style="background:var(--bg);color:var(--muted)" data-tip="${esc(TIP.provlocked)}">🔒 Ø Laden-Provision nach Registrierung</span>`}`
+               : `<span class="prod-margin" style="background:var(--bg);color:var(--muted)" data-tip="${esc(TIP.provlocked)}">${provLocked(p.provision_prozent + ' %')}</span>`}`
           : `<div class="prod-price"><span class="uvp-l">Preis auf Anfrage</span></div>`}
         <button class="prod-btn ${inCart?'in':''}" onclick="event.stopPropagation();toggleCart('${p.produkt_id}')">
           ${inCart?'✓ In Anfrage':'+ Zur Anfrage'}</button>
@@ -1404,7 +1409,7 @@ function openProduct(id){
     document.getElementById('pdPrice').textContent = eur(p.uvp_preis);
     document.getElementById('pdMargin').innerHTML = isRegistered()
       ? `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf</span><span>= ${p.provision_prozent} % Provision</span>`
-      : `<span style="font-weight:700;color:var(--muted)" data-tip="${esc(TIP.provlocked)}">🔒 Ø Laden-Provision<br>nach Registrierung</span>`;
+      : `<span style="font-weight:700;color:var(--muted)" data-tip="${esc(TIP.provlocked)}">${provLocked(p.provision_prozent + ' %')}</span>`;
   } else {
     document.getElementById('pdPrice').textContent = 'Preis auf Anfrage';
     document.getElementById('pdMargin').innerHTML = '';
@@ -1500,7 +1505,7 @@ function renderCart(){
   const toggle = `
     <div class="calc-toggle">
       <span class="info-ic" data-tip="${esc(TIP.calc)}">i</span>
-      <span>🧮 Margen-Rechner <span class="ct-sub">${calcOn?'an — nur Schätzung':'aus'}</span></span>
+      <span>Margen-Rechner <span class="ct-sub">${calcOn?'an — nur Schätzung':'aus'}</span></span>
       <span class="sw"><input type="checkbox" id="calcSw" ${calcOn?'checked':''} onchange="toggleCalc(this.checked)">
         <label for="calcSw"></label></span>
     </div>`;
