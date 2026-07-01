@@ -1026,6 +1026,16 @@ function provLabel(b){ return b.provision_min===b.provision_max
   ? b.provision_min+' %' : b.provision_min+'–'+b.provision_max+' %'; }
 // Locked-Provision-Teaser: echter Wert steht im Markup, ist aber per CSS unkenntlich (sanft pulsierender Balken).
 function provLocked(label){ return `Ø Laden-Provision <span class="pl-val">${label}</span> 🔒`; }
+// Klick auf eine gesperrte Provision (nicht eingeloggt) -> Registrierungs-Popup mit Kontext-Hinweis.
+function openProvUnlock(){
+  if(isRegistered()) return;
+  openProfile();
+  document.getElementById('pfIntro').innerHTML =
+    '<b>Einloggen, um die durchschnittlichen Laden-Provisionen zu sehen.</b><br><br>'+
+    'Mit deinem kostenlosen Händler-Profil siehst du die durchschnittlichen Laden-Provisionen und kannst '+
+    'Lieferanten anfragen. Deine E-Mail ist zugleich dein Login. Je aussagekräftiger dein Profil (Lage, '+
+    'Filialen, Handelsvolumen), desto höher die Chance, dass die Marke zusagt und eine gute Provision für dich herauskommt.';
+}
 // Such-Matcher: endet die Eingabe auf Leerzeichen -> exakte Wortgrenze ("auto " ≠ "automat").
 function escRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 function makeMatcher(rawValue){
@@ -1278,7 +1288,7 @@ function renderBrands(){
         <div class="brand-row-meta">
           ${isRegistered()
             ? `<span class="prov-badge" data-tip="${esc(TIP.prov)}">↑ ${provLabel(b)} Ø Laden-Provision</span>`
-            : `<span class="prov-badge" data-tip="${esc(TIP.provlocked)}">${provLocked(provLabel(b))}</span>`}
+            : `<span class="prov-badge pl-lockbadge" data-tip="${esc(TIP.provlocked)}" style="cursor:pointer">${provLocked(provLabel(b))}</span>`}
           ${loadingStrip ? '<span class="meta-pill">Produkte laden …</span>'
             : `<span class="meta-pill" data-tip="${esc(TIP.count)}">${b.productCount} Produkte</span>
           <span class="meta-pill" data-tip="${esc(TIP.avg)}">Ø Warenkorb ${eur(b.avgCart)}</span>`}
@@ -1323,7 +1333,7 @@ function openBrand(id, carry){
   document.getElementById('mMeta').innerHTML = `
     ${isRegistered()
       ? `<span class="meta-chip" data-tip="${esc(TIP.prov)}">Ø Laden-Provision <b>${provLabel(activeBrand)}</b></span>`
-      : `<span class="meta-chip" data-tip="${esc(TIP.provlocked)}">${provLocked(provLabel(activeBrand))}</span>`}
+      : `<span class="meta-chip pl-lockbadge" data-tip="${esc(TIP.provlocked)}" style="cursor:pointer">${provLocked(provLabel(activeBrand))}</span>`}
     <span class="meta-chip" data-tip="${esc(TIP.avg)}">Ø Warenkorb <b>${eur(activeBrand.avgCart)}</b></span>
     <span class="meta-chip" data-tip="${esc(TIP.count)}">${activeBrand.productCount} Produkte</span>
     <div class="modal-actions">
@@ -1386,7 +1396,7 @@ function renderProducts(){
              </div>
              ${isRegistered()
                ? `<span class="prod-margin" data-tip="${esc(tip)}">${p.provision_prozent} % = ${eur(marge)} Marge</span>`
-               : `<span class="prod-margin" style="background:var(--bg);color:var(--muted)" data-tip="${esc(TIP.provlocked)}">${provLocked(p.provision_prozent + ' %')}</span>`}`
+               : `<span class="prod-margin pl-lockbadge" style="background:var(--bg);color:var(--muted);cursor:pointer" data-tip="${esc(TIP.provlocked)}">${provLocked(p.provision_prozent + ' %')}</span>`}`
           : `<div class="prod-price"><span class="uvp-l">Preis auf Anfrage</span></div>`}
         <button class="prod-btn ${inCart?'in':''}" onclick="event.stopPropagation();toggleCart('${p.produkt_id}')">
           ${inCart?'✓ In Anfrage':'+ Zur Anfrage'}</button>
@@ -1432,7 +1442,7 @@ function openProduct(id){
     document.getElementById('pdPrice').textContent = eur(p.uvp_preis);
     document.getElementById('pdMargin').innerHTML = isRegistered()
       ? `<b>${eur(marginOf(p))}</b><span>Marge je Verkauf</span><span>= ${p.provision_prozent} % Provision</span>`
-      : `<span style="font-weight:700;color:var(--muted)" data-tip="${esc(TIP.provlocked)}">${provLocked(p.provision_prozent + ' %')}</span>`;
+      : `<span class="pl-lockbadge" style="font-weight:700;color:var(--muted);cursor:pointer" data-tip="${esc(TIP.provlocked)}">${provLocked(p.provision_prozent + ' %')}</span>`;
   } else {
     document.getElementById('pdPrice').textContent = 'Preis auf Anfrage';
     document.getElementById('pdMargin').innerHTML = '';
@@ -2154,6 +2164,9 @@ document.addEventListener('mouseover', e => {
 });
 // Touch/Klick: ohne Hover (Mobil) zeigt ein Tipp auf das (i)/Element den Text; Klick woanders schließt ihn.
 document.addEventListener('click', e => {
+  // Klick auf gesperrte Provision -> Händler-Registrierungs-Popup (statt nur Tooltip).
+  const lock = e.target.closest('.pl-lockbadge');
+  if(lock){ e.stopPropagation(); tipEl.classList.remove('show'); curTip = null; openProvUnlock(); return; }
   const t = e.target.closest('[data-tip]');
   if(t){ e.stopPropagation(); showTip(t); curTip = t; }
   else { tipEl.classList.remove('show'); curTip = null; }
