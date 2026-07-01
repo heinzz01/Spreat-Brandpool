@@ -225,6 +225,16 @@
   .prod-btn:hover{background:#239a51}
   .prod-btn.in{background:var(--green-soft);color:var(--green)}
   .no-results{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;font-size:14px}
+  .wish-box{grid-column:1/-1;text-align:center;max-width:470px;margin:22px auto;padding:28px 24px;
+    background:var(--green-soft);border-radius:16px}
+  .wish-emoji{font-size:30px;margin-bottom:6px}
+  .wish-title{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;line-height:1.35}
+  .wish-sub{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:14px}
+  .wish-input,.wish-email{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 12px;
+    font-size:13.5px;font-family:inherit;margin-bottom:10px;background:var(--card);color:var(--text);box-sizing:border-box}
+  .wish-input{resize:vertical}
+  .wish-btn{width:100%}
+  .wish-err{color:#c0392b;font-size:12.5px;margin-top:6px}
 
   .drawer{position:fixed;z-index:55;right:0;top:0;height:100vh;width:min(440px,100vw);
     background:var(--card);transform:translateX(105%);transition:transform .25s ease;
@@ -1224,6 +1234,57 @@ function updateApplyBtn(){ const b=document.getElementById('fsApplyBtn'); if(b) 
 
 function toggleSearchClear(){var i=document.getElementById("brandSearch"),b=document.getElementById("brandClear");if(b)b.classList.toggle("show",!!(i&&i.value));}
 function clearBrandSearch(){var i=document.getElementById("brandSearch");if(!i)return;i.value="";toggleSearchClear();renderBrands();i.focus();}
+// Anonymes Such-Logging: entprellt, ab 2 Zeichen, gleicher Begriff nicht doppelt hintereinander.
+let _searchLogTimer = null, _lastLoggedSearch = '';
+function logSearch(q, count){
+  q = (q||'').trim();
+  if(q.length < 2) return;
+  clearTimeout(_searchLogTimer);
+  _searchLogTimer = setTimeout(() => {
+    if(q === _lastLoggedSearch) return;
+    _lastLoggedSearch = q;
+    try { sb.from('search_logs').insert({ query: q, result_count: count }); } catch(e){}
+  }, 900);
+}
+// Empty-State: Wunsch-Feld, wenn eine Suche/ein Filter aktiv war und nichts gefunden wurde.
+function emptyStateHtml(M){
+  if(!M.active && !FILTER.haupt) return '<div class="no-results">Keine Lieferanten gefunden.</div>';
+  const q = M.active ? M.q : '';
+  const forText = q ? ' für „' + escTxt(q) + '"' : '';
+  return '<div class="wish-box">'
+    + '<div class="wish-emoji">🔍</div>'
+    + '<div class="wish-title">Noch nichts gefunden' + forText + '</div>'
+    + '<div class="wish-sub">Sag uns, welche Produkte oder Marken dir hier noch fehlen. Je mehr Nachfrage wir sehen, '
+    + 'desto gezielter arbeiten wir daran, sie für dich in den Brandpool zu holen.</div>'
+    + '<textarea id="wishText" class="wish-input" rows="3" placeholder="z. B. glutenfreie Snacks oder die Marke XY">' + escTxt(q) + '</textarea>'
+    + '<input type="email" id="wishEmail" class="wish-email" placeholder="E-Mail (optional) — dann melden wir uns, sobald es im Sortiment ist">'
+    + '<button class="btn btn-primary wish-btn" onclick="submitProductWish()">Wunsch absenden</button>'
+    + '<div class="wish-err" id="wishErr" style="display:none"></div>'
+    + '</div>';
+}
+async function submitProductWish(){
+  const wish  = (document.getElementById('wishText').value || '').trim();
+  const email = (document.getElementById('wishEmail').value || '').trim();
+  const err   = document.getElementById('wishErr');
+  if(!wish){ err.textContent = 'Bitte schreib kurz, was du suchst.'; err.style.display = ''; return; }
+  if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    err.textContent = 'Bitte eine gültige E-Mail eingeben (oder Feld leer lassen).'; err.style.display = ''; return;
+  }
+  err.style.display = 'none';
+  const btn = document.querySelector('.wish-btn'); if(btn){ btn.disabled = true; btn.textContent = 'Wird gesendet …'; }
+  const q = makeMatcher(document.getElementById('brandSearch').value).q;
+  const { error } = await sb.rpc('submit_product_request', { p_wish: wish, p_email: email, p_search_query: q });
+  if(error){
+    err.textContent = 'Konnte nicht gesendet werden: ' + error.message; err.style.display = '';
+    if(btn){ btn.disabled = false; btn.textContent = 'Wunsch absenden'; }
+    return;
+  }
+  const thanks = email
+    ? 'Danke! Wir kontaktieren dich, sobald wir das Produkt im Sortiment haben.'
+    : 'Danke! Dein Wunsch ist bei uns angekommen — wir kümmern uns drum.';
+  document.getElementById('brandGrid').innerHTML =
+    '<div class="wish-box"><div class="wish-emoji">✅</div><div class="wish-title">' + thanks + '</div></div>';
+}
 function renderBrands(){
   if(!_brands){ return; }
   const M = makeMatcher(document.getElementById('brandSearch').value);
@@ -1236,9 +1297,10 @@ function renderBrands(){
     return dataProvider.getProducts(b.marken_id).some(p => M.test(p.produktname));
   });
   lastFilterCount = brands.length;
+  if(M.active) logSearch(M.q, brands.length);
   if(typeof updateApplyBtn==='function') updateApplyBtn();
   const grid = document.getElementById('brandGrid');
-  if(!brands.length){ grid.innerHTML='<div class="state-msg">Keine Lieferanten gefunden.</div>'; return; }
+  if(!brands.length){ grid.innerHTML = emptyStateHtml(M); return; }
   grid.innerHTML = brands.map(b => {
     const prods = dataProvider.getProducts(b.marken_id);
     const brandMatch = M.active && (M.test(b.name) || M.test(b.kurzbeschreibung));
