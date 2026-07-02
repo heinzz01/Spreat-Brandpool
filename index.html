@@ -1606,7 +1606,7 @@ function renderCart(){
     </div>`;
   const bulk = calcOn ? `
     <div class="bulk">
-      <span>Verkäufe / Monat für alle:</span>
+      <span>deine geschätzten Verkäufe / Monat für alle:</span>
       <input type="number" id="bulkQty" value="10" min="0">
       <button onclick="setAllQty()">übernehmen</button>
     </div>` : '';
@@ -1641,7 +1641,7 @@ function renderCart(){
   const calcBox = calcOn ? `
     ${!isRegistered() ? `<div class="calc-hint" style="background:var(--accent-soft);color:#1f3d33;padding:9px 11px;border-radius:8px;margin-bottom:10px">ℹ︎ Du bist noch nicht registriert — wir rechnen vereinfacht mit ${DEMO_PROV} %. Nach der kostenlosen Registrierung siehst du die echten Provisionen und Margen.</div>` : ''}
     <div class="calc-box">
-      <div class="calc-row"><span data-tip="${esc(TIP.units)}">Verkäufe / Monat</span><span>${t.units} Stück</span></div>
+      <div class="calc-row"><span data-tip="${esc(TIP.units)}">deine geschätzten Verkäufe / Monat</span><span>${t.units} Stück</span></div>
       <div class="calc-row"><span data-tip="${esc(TIP.revenue)}">Umsatz / Monat (UVP)</span><span>${eur(t.revenue)}</span></div>
       <div class="calc-row"><span data-tip="${esc(TIP.prov)}">Ø Laden-Provision <span class="info-ic" data-tip="${esc(TIP.prov)}">i</span></span><span>${avgProvPct} %</span></div>
       <div class="calc-row total"><span data-tip="${esc(TIP.netmargin)}">Deine Netto-Marge / Monat</span>
