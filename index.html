@@ -1443,7 +1443,7 @@ function renderProducts(){
   grid.innerHTML = ps.map(p => {
     const inCart = !!cart[p.produkt_id];
     const marge = marginOf(p);
-    const tip = `Pro verkauftem Stück verdienst du ${eur(marge)} — das sind ${p.provision_prozent} % vom UVP (${eur(p.uvp_preis)}).`;
+    const tip = `Bei einer Provision von ${p.provision_prozent} % bekommst du ${eur(marge)} Marge pro verkauftem Stück (UVP ${eur(p.uvp_preis)}). Der Provisionssatz ist ein Ø-Richtwert und kann je nach Verhandlung noch abweichen.`;
     return `<div class="prod-card" onclick="openProduct('${p.produkt_id}')">
       <div class="prod-thumb" data-gidx="0">
         ${prodGallery(p)}
