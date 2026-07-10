@@ -982,7 +982,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 /* Admin-Vorschau: eingeloggt als ADMIN_EMAIL werden auch sichtbar=false-Marken
    geladen (RLS-Policy brands_admin_read/products_admin_read) und mit
    VORSCHAU-Badge markiert. Für alle anderen Besucher ändert sich nichts. */
-const ADMIN_EMAIL = 'hp@hoelscher-online.com';
+const ADMIN_EMAILS = ['hp@hoelscher-online.com','mattis@spreat.com','paul@spreat.com'];
 let isAdmin = false;
 
 let _brands = null, _products = [];
@@ -2137,7 +2137,7 @@ async function restoreSession(){
   if(data && data.session){
     session.loggedIn = true;
     session.email = data.session.user.email;
-    isAdmin = (session.email||'').toLowerCase() === ADMIN_EMAIL;
+    isAdmin = ADMIN_EMAILS.includes((session.email||'').toLowerCase());
     await loadProfile(data.session.user.id);
     await loadMyRequests();
   }
