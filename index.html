@@ -998,16 +998,33 @@ const dataProvider = {
   },
   async loadProducts(){
     // Produkte paginiert laden — PostgREST liefert max. 1000 Zeilen pro Request,
-    // der Katalog hat tausende. Ohne diese Schleife zeigen spätere Marken "0 Produkte".
-    let all = [], from = 0; const PAGE = 1000;
-    while(true){
-      let pq = sb.from('products').select('*');
-      if(!isAdmin) pq = pq.eq('sichtbar', true);
-      const {data, error} = await pq.order('produkt_id').range(from, from + PAGE - 1);
+    // der Katalog hat ~12.500. Ohne Pagination zeigen spätere Marken "0 Produkte".
+    //
+    // PERF (2026-07-13): Die alte while-Schleife holte die 16 Seiten NACHEINANDER —
+    // jede wartete auf die vorige, die letzte startete erst nach ~8,6 s. Gemessen:
+    // ~10 s, bevor die Seite überhaupt etwas anzeigen konnte.
+    // Jetzt: einmal die Gesamtzahl holen, dann alle Seiten PARALLEL. Die Ladezeit ist
+    // damit die der langsamsten Einzelseite (~1,8 s) statt der Summe aller.
+    const PAGE = 1000;
+    const base = () => {
+      let q = sb.from('products').select('*');
+      if(!isAdmin) q = q.eq('sichtbar', true);
+      return q;
+    };
+    let cq = sb.from('products').select('produkt_id', {count:'exact', head:true});
+    if(!isAdmin) cq = cq.eq('sichtbar', true);
+    const {count, error: ce} = await cq;
+    if(ce) throw ce;
+
+    const seiten = Math.max(1, Math.ceil((count || 0) / PAGE));
+    const antworten = await Promise.all(
+      Array.from({length: seiten}, (_, i) =>
+        base().order('produkt_id').range(i * PAGE, i * PAGE + PAGE - 1))
+    );
+    const all = [];
+    for(const {data, error} of antworten){
       if(error) throw error;
-      all = all.concat(data || []);
-      if(!data || data.length < PAGE) break;
-      from += PAGE;
+      if(data) all.push(...data);
     }
     _products = all.map(p => ({...p, uvp_preis: Number(p.uvp_preis)||0,
       provision_prozent: Number(p.provision_prozent)||0}));
