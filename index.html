@@ -1430,7 +1430,33 @@ function openBrand(id, carry){
   document.getElementById('overlay').classList.add('open');
   document.getElementById('brandModal').classList.add('open');
   document.body.classList.add('shopview');
-  { const want='?marke='+encodeURIComponent(id); if(location.search!==want) history.pushState({marke:id},'',want); }
+  syncUrl(id, null);
+}
+/* ============================================================
+   Deep-Links:  ?marke=<marken_id>            -> Marke geöffnet
+                ?marke=<id>&produkt=<pid>     -> Marke + Produkt geöffnet
+   Eine einzige Stelle schreibt die URL, damit Marke und Produkt nie auseinanderlaufen.
+   `replace` benutzen wir beim Schließen des Produkts: sonst sammelt jedes Auf/Zu einen
+   History-Eintrag an und der Zurück-Button fühlt sich kaputt an.
+   ============================================================ */
+function urlFor(brandId, prodId){
+  if(!brandId) return location.pathname;
+  let q = '?marke=' + encodeURIComponent(brandId);
+  if(prodId) q += '&produkt=' + encodeURIComponent(prodId);
+  return q;
+}
+// Während wir einen Deep-Link ANWENDEN, darf openBrand/openProduct die URL nicht
+// zurückschreiben — sonst entstehen beim Öffnen von ?marke=x&produkt=y zwei zusätzliche
+// History-Einträge (erst ?marke=x, dann wieder ?marke=x&produkt=y) und der Zurück-Button
+// springt scheinbar ins Nichts.
+let _applyingUrl = false;
+function syncUrl(brandId, prodId, replace){
+  if(_applyingUrl) return;
+  const want = urlFor(brandId, prodId);
+  const now  = location.search || location.pathname;
+  if(now === want) return;
+  const state = {marke: brandId || null, produkt: prodId || null};
+  if(replace) history.replaceState(state, '', want); else history.pushState(state, '', want);
 }
 function scrollCats(dir){
   const c = document.getElementById('mCats');
@@ -1528,6 +1554,7 @@ function openProduct(id){
   pdRenderBtn();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('productPopup').classList.add('open');
+  syncUrl(p.marken_id, id);          // ?marke=…&produkt=… → Produkt ist direkt verlinkbar
 }
 function pdRenderBtn(){
   const btn = document.getElementById('pdAddBtn');
@@ -1551,9 +1578,12 @@ function pdNav(dir){ const s = document.getElementById('pdStage'); pdShow((parse
 function pdGo(i){ pdShow(i); }
 function closeProduct(){
   document.getElementById('productPopup').classList.remove('open');
-  if(!document.getElementById('brandModal').classList.contains('open') &&
-     !document.getElementById('drawer').classList.contains('open'))
+  const brandOpen = document.getElementById('brandModal').classList.contains('open');
+  if(!brandOpen && !document.getElementById('drawer').classList.contains('open'))
     document.getElementById('overlay').classList.remove('open');
+  // URL zurück auf die Marke (bzw. Startseite), ohne neuen History-Eintrag
+  pdProductId = null;
+  syncUrl(brandOpen && activeBrand ? activeBrand.marken_id : null, null, true);
 }
 
 /* ============================================================
@@ -2206,16 +2236,39 @@ function closeAll(fromPop){
 }
 function copyShareLink(ev){
   if(!activeBrand) return;
-  const url = location.origin + location.pathname + '?marke=' + encodeURIComponent(activeBrand.marken_id);
+  // Ist gerade ein Produkt offen, wird dessen Deep-Link kopiert — sonst der Marken-Link.
+  const url = location.origin + location.pathname + urlFor(activeBrand.marken_id, pdProductId);
   if(navigator.clipboard) navigator.clipboard.writeText(url).catch(()=>{});
   const b = ev && ev.currentTarget;
   if(b){ const t=b.innerHTML; b.innerHTML='✓'; b.classList.add('copied'); setTimeout(()=>{b.innerHTML=t;b.classList.remove('copied');},1300); }
 }
-window.addEventListener('popstate', () => {
-  const m = new URLSearchParams(location.search).get('marke');
-  if(m && _brands && dataProvider.getBrands().some(b=>b.marken_id===m)) openBrand(m);
-  else closeAll(true);
-});
+// Aus der URL den passenden Zustand herstellen. Wird beim ersten Laden UND beim
+// Zurück/Vorwärts-Button benutzt, damit beide Wege garantiert dasselbe tun.
+function applyUrlState(){
+  const q = new URLSearchParams(location.search);
+  const m = q.get('marke'), pid = q.get('produkt');
+  const brandOk = m && _brands && dataProvider.getBrands().some(b => b.marken_id === m);
+  if(!brandOk){ closeAll(true); return; }
+  _applyingUrl = true;
+  try {
+    openBrand(m);
+    const p = pid ? findProduct(pid) : null;
+    // Produkt nur öffnen, wenn es wirklich zu dieser Marke gehört — ein veralteter oder
+    // manipulierter Link soll kein fremdes Produkt unter der falschen Marke zeigen.
+    if(p && p.marken_id === m){
+      openProduct(pid);
+    } else {
+      document.getElementById('productPopup').classList.remove('open');
+      pdProductId = null;
+    }
+    // Produkt-ID stand in der URL, gibt es aber nicht (mehr) → still auf die Marke zurückfallen
+    if(pid && !(p && p.marken_id === m)){
+      _applyingUrl = false;
+      syncUrl(m, null, true);
+    }
+  } finally { _applyingUrl = false; }
+}
+window.addEventListener('popstate', () => applyUrlState(true));
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeAll(); });
 
 /* ---- Tooltip-Engine ---- */
@@ -2266,7 +2319,9 @@ async function init(){
     // Phase 2: Produkte nachladen, dann Strips/Zähler/Filter füllen
     await dataProvider.loadProducts();
     buildTaxo(); renderFilterBar(); renderBrands();
-    { const m=new URLSearchParams(location.search).get('marke'); if(m && dataProvider.getBrands().some(b=>b.marken_id===m)) openBrand(m); }
+    // Deep-Link aus der URL herstellen: ?marke=… bzw. ?marke=…&produkt=…
+    // (erst hier, weil findProduct() die geladenen Produkte braucht)
+    if(new URLSearchParams(location.search).get('marke')) applyUrlState(false);
   } catch(e){
     document.getElementById('brandGrid').innerHTML =
       '<div class="state-msg">Daten konnten nicht geladen werden: ' + escTxt(e.message||e) + '</div>';
