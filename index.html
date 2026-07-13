@@ -90,6 +90,10 @@
   .count-note{color:var(--muted);font-size:13px}
 
   .brand-rows{display:flex;flex-direction:column;gap:16px;padding:18px 0 90px}
+  /* Trennlinie zwischen Kern-Marken einer Welt und Marken mit einzelnen Produkt-Treffern */
+  .tier-divider{display:flex;align-items:center;gap:14px;margin:10px 0 2px;color:var(--muted);font-size:13px}
+  .tier-divider::before,.tier-divider::after{content:'';flex:1;border-top:1px dashed var(--border)}
+  .tier-divider span{white-space:nowrap}
   .brand-row{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
     padding:18px 20px;cursor:pointer;transition:box-shadow .12s,border-color .12s}
   .brand-row:hover{box-shadow:var(--shadow);border-color:#d3d6de}
@@ -1197,7 +1201,9 @@ function prefetchBrand(id){
 /* ============================================================
    Branchen-Filter (2-stufig)
    ============================================================ */
-const HAUPT_ORDER = ['Bücher','Filme, Serien, Musik & Games','Elektronik & Computer','Home, Garden & DIY','Kosmetik, Drogerie & Lebensmittel','Spielzeug & Baby','Kleidung, Schuhe & Uhren','Sport & Freizeit','Auto, Motorrad & Gewerbe','Sonstiges'];
+// Sortimentswelten (seit 2026-07-13, Mapping siehe Brandpool/kategorien-abgleich.xlsx;
+// Rollback: archiv/kategorien-rollback-2026-07-13.sql)
+const HAUPT_ORDER = ['Food & Feinkost','Kosmetik & Körperpflege','Wohnen & Deko','Kerzen & Raumduft','Küche & Haushalt','Mode & Accessoires','Kinder, Baby & Spiel','Geschenke, Souvenirs & Regionales','Papeterie, Kunst & Print','Garten, Grill & DIY','Sport, Freizeit & Outdoor','Gesundheit & Wellness','Technik, Smart Home & Auto','Tierbedarf'];
 let FILTER = {haupt:null, unter:null};
 let TAXO = [];
 let BRANDCATS = {};
@@ -1332,7 +1338,7 @@ function renderBrands(){
   if(typeof updateApplyBtn==='function') updateApplyBtn();
   const grid = document.getElementById('brandGrid');
   if(!brands.length){ grid.innerHTML = emptyStateHtml(M); return; }
-  grid.innerHTML = brands.map(b => {
+  const rowHtml = b => {
     const prods = dataProvider.getProducts(b.marken_id);
     const brandMatch = M.active && (M.test(b.name) || M.test(b.kurzbeschreibung));
     // Such-Treffer (nur wenn die Suche die Marke selbst NICHT trifft)
@@ -1389,7 +1395,23 @@ function renderBrands(){
       </div>
       <div class="brand-strip">${cells}</div>
     </div>`;
-  }).join('');
+  };
+  // Zweistufige Liste bei aktivem Branchen-Filter (ohne Textsuche):
+  // erst die Kern-Marken (Marken-Kategorie = Filter), dann Trennlinie, dann alle
+  // Marken, die in dieser Welt "nur" einzelne Produkte listen (nach Trefferzahl sortiert).
+  if(FILTER.haupt && !M.active){
+    const isKern = b => b.kategorie_haupt === FILTER.haupt &&
+      (!FILTER.unter || b.kategorie_unter === FILTER.unter);
+    const kern = brands.filter(isKern);
+    const rest = brands.filter(b => !isKern(b))
+      .map(b => [b, dataProvider.getProducts(b.marken_id).filter(matchesActiveFilter).length])
+      .sort((a,z) => z[1]-a[1]).map(x => x[0]);
+    const divider = (kern.length && rest.length)
+      ? `<div class="tier-divider"><span>Weitere Lieferanten mit passenden Einzelprodukten</span></div>` : '';
+    grid.innerHTML = kern.map(rowHtml).join('') + divider + rest.map(rowHtml).join('');
+    return;
+  }
+  grid.innerHTML = brands.map(rowHtml).join('');
 }
 
 /* ============================================================
