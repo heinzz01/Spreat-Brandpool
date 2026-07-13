@@ -1102,7 +1102,8 @@ let session = {loggedIn:false, email:null, profile:null};
    Brand rows
    ============================================================ */
 function brandLogoHtml(b, cls){
-  if(b.logo_url) return `<div class="brand-logo ${cls||''}"><img src="${esc(b.logo_url)}" alt=""></div>`;
+  // onerror: fehlt die Logo-Datei, erscheint statt eines kaputten Bild-Icons das Kürzel der Marke
+  if(b.logo_url) return `<div class="brand-logo ${cls||''}"><img src="${esc(b.logo_url)}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.textContent='${esc(initials(b.name))}'"></div>`;
   return `<div class="brand-logo ${cls||''}" style="background:${b.color}">${initials(b.name)}</div>`;
 }
 function prodImg(p){
@@ -1142,8 +1143,12 @@ function productImages(p){
 function prodGallery(p){
   const im = productImages(p);
   if(!im.length) return '<span class="g-ph">📦</span>';
+  // WICHTIG (2026-07-13): auch das Hauptbild (i===0) lazy laden. Vorher hatte nur die Galerie
+  // lazy — dadurch forderte der Browser beim Seitenaufruf ALLE ~700 Startfotos gleichzeitig an
+  // (~40 MB), obwohl nur ~7 sichtbar sind. Ergebnis: Kacheln blieben ~12 s weiß.
+  // Bilder im/nahe Viewport lädt der Browser trotz loading="lazy" sofort — es geht nichts verloren.
   const slides = im.map((src,i) =>
-    `<img class="g-img" src="${esc(cdnResize(src,400))}" alt="" ${i?'loading="lazy"':''}
+    `<img class="g-img" src="${esc(cdnResize(src,400))}" alt="" loading="lazy" decoding="async"
        style="display:${i===0?'block':'none'}" onerror="this.style.display='none'">`).join('');
   if(im.length === 1) return slides;
   const dots = `<span class="g-dots">${im.map((_,i)=>`<i class="${i===0?'on':''}"></i>`).join('')}</span>`;
