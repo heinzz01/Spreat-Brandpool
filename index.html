@@ -87,6 +87,16 @@
     background:var(--card);font-size:14px;outline:none}
   .search input:focus{border-color:var(--accent)}
   .search::before{content:"🔍";position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.6}
+  /* Aktiver Kategorie-Filter direkt in der Suchzeile: "N Kategorien aktiv" + X zum Zurücksetzen */
+  .filter-active{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:none;align-items:center;gap:7px;
+    border:none;background:transparent;cursor:pointer;padding:0;font:inherit;font-size:13px;color:var(--accent);white-space:nowrap}
+  .filter-active.show{display:flex}
+  .filter-active .fa-x{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
+    background:#e8f3e4;color:#2f6b2a;font-size:12px;line-height:1;transition:background .12s}
+  .filter-active:hover .fa-x{background:#d3e9cd}
+  .search.has-filter input{padding-right:var(--fa-pad,150px)}
+  .search.has-filter.has-clear .filter-active{right:38px}
+  @media(max-width:640px){ .filter-active .fa-txt{display:none} .search.has-filter input{padding-right:70px} }
   .count-note{color:var(--muted);font-size:13px}
 
   .brand-rows{display:flex;flex-direction:column;gap:16px;padding:18px 0 90px}
@@ -612,6 +622,7 @@
   <div class="toolbar">
     <div class="search">
       <input type="text" id="brandSearch" placeholder="Lieferanten und Produkte finden …" oninput="renderBrands();toggleSearchClear()">
+      <button type="button" id="filterReset" class="filter-active" aria-label="Kategorien zurücksetzen" title="Kategorien zurücksetzen" onclick="resetFilter()"><span class="fa-txt" id="filterActiveTxt"></span><span class="fa-x">✕</span></button>
       <button type="button" id="brandClear" class="search-clear" aria-label="Suche löschen" onclick="clearBrandSearch()">✕</button>
     </div>
   </div>
@@ -1245,6 +1256,21 @@ function renderFilterBar(){
   }
   bar.innerHTML=r1+r2;
   renderMobileBtn();
+  renderSearchFilterBadge();
+}
+// Zeigt den aktiven Kategorie-Filter in der Suchzeile an ("1 Kategorie aktiv" + X).
+// Das X ist der offensichtliche Weg zurück zu "Alle Lieferanten".
+function renderSearchFilterBadge(){
+  const wrap=document.querySelector('.toolbar .search');
+  const btn=document.getElementById('filterReset');
+  const txt=document.getElementById('filterActiveTxt');
+  if(!wrap||!btn||!txt) return;
+  const n = FILTER.haupt ? (FILTER.unter?2:1) : 0;
+  if(!n){ wrap.classList.remove('has-filter'); btn.classList.remove('show'); return; }
+  txt.textContent = n===1 ? '1 Kategorie aktiv' : '2 Kategorien aktiv';
+  wrap.classList.add('has-filter'); btn.classList.add('show');
+  // Eingabefeld genau um die Breite des Badges einrücken, damit der Text nie darunterläuft
+  requestAnimationFrame(()=>{ wrap.style.setProperty('--fa-pad', (btn.offsetWidth + 20) + 'px'); });
 }
 function renderMobileBtn(){
   const val=document.getElementById('fbVal'), badge=document.getElementById('fbBadge'); if(!val) return;
@@ -1269,7 +1295,7 @@ function openFilterSheet(){ renderFilterSheet(); document.getElementById('filter
 function closeFilterSheet(){ document.getElementById('filterSheetOv').classList.remove('open'); document.getElementById('filterSheet').classList.remove('open'); }
 function updateApplyBtn(){ const b=document.getElementById('fsApplyBtn'); if(b) b.textContent='Anzeigen'; }
 
-function toggleSearchClear(){var i=document.getElementById("brandSearch"),b=document.getElementById("brandClear");if(b)b.classList.toggle("show",!!(i&&i.value));}
+function toggleSearchClear(){var i=document.getElementById("brandSearch"),b=document.getElementById("brandClear"),w=document.querySelector(".toolbar .search");var on=!!(i&&i.value);if(b)b.classList.toggle("show",on);if(w)w.classList.toggle("has-clear",on);}
 function clearBrandSearch(){var i=document.getElementById("brandSearch");if(!i)return;i.value="";toggleSearchClear();renderBrands();i.focus();}
 // Anonymes Such-Logging: entprellt, ab 2 Zeichen, gleicher Begriff nicht doppelt hintereinander.
 let _searchLogTimer = null, _lastLoggedSearch = '';
