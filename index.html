@@ -170,7 +170,7 @@
 
   .modal{position:fixed;z-index:55;left:50%;top:50%;transform:translate(-50%,-50%);
     width:min(960px,94vw);max-height:90vh;background:var(--card);border-radius:18px;
-    display:none;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(16,18,29,.4)}
+    display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;box-shadow:0 30px 80px rgba(16,18,29,.4)}
   .modal.open{display:flex}
   .modal-head{padding:22px 24px;border-bottom:1px solid var(--border)}
   .modal-head-top{display:flex;align-items:flex-start;gap:14px}
@@ -190,6 +190,23 @@
   .modal-meta .btn{margin-left:auto}
   .modal-meta .modal-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
   .modal-meta .modal-actions .btn{margin-left:0}
+  /* Marken-Detailzeile (Gruendung, Instagram, EAN, Eurolochung) – schlank, volle Breite, Gravur */
+  .modal-head.has-details{padding-bottom:3px}
+  .brand-details{width:100%;display:flex;justify-content:space-between;align-items:stretch;
+    border-top:1px solid var(--border);margin-top:9px;padding:3px 0 0;font-size:10px;letter-spacing:.02em}
+  .brand-details .bd-i{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
+    white-space:nowrap;position:relative}
+  .brand-details .bd-i+.bd-i::before{content:"";position:absolute;left:0;top:50%;
+    transform:translateY(-50%);height:1em;width:1px;background:var(--border)}
+  .brand-details .bd-k{color:#9aa0a8;text-shadow:0 1px 0 rgba(255,255,255,.9)}
+  .brand-details .bd-v{color:#727880;text-shadow:0 1px 0 rgba(255,255,255,.9)}
+  .brand-details .bd-v.off{color:#c2c7ce}
+  @media(max-width:640px){
+    .modal-head.has-details{padding-bottom:11px}
+    .brand-details{flex-wrap:wrap;gap:4px 14px;font-size:10.5px}
+    .brand-details .bd-i{flex:1 1 42%;justify-content:flex-start}
+    .brand-details .bd-i+.bd-i::before{display:none}
+  }
 
   .modal-toolbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;
     gap:12px;flex-wrap:wrap;align-items:center;background:var(--card)}
@@ -205,7 +222,7 @@
     padding:6px 12px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;flex:0 0 auto}
   .cat-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
-  .modal-body{padding:18px 24px 24px;overflow-y:auto}
+  .modal-body{padding:18px 24px 24px;overflow:visible}
   .prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:14px}
   .prod-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
   .prod-thumb{aspect-ratio:1;display:grid;place-items:center;font-size:40px;position:relative;background:#fff}
@@ -691,6 +708,7 @@
       </div>
     </div>
     <div class="modal-meta" id="mMeta"></div>
+    <div class="brand-details" id="mDetails"></div>
   </div>
   <div class="modal-toolbar">
     <div class="search" style="min-width:180px">
@@ -1124,8 +1142,6 @@ let calcOn = true;          // Margen-Rechner an/aus (von der Bestellung getrenn
 let myRequests = [];        // gesendete Anfragen dieser Session (Anfrageübersicht)
 let activeBrand = null;
 let activeCat = 'Alle';
-// Virtuelle Kategorie: filtert auf featured statt auf products.kategorie (siehe openBrand).
-const TOPSELLER_CAT = '⭐ Topseller';
 let reqGroupCount = 0;
 let pendingLoginEmail = '';
 let pendingProfile = null;
@@ -1473,6 +1489,25 @@ function renderBrandDesc(b){
     }
   });
 }
+function renderBrandDetails(b){
+  const box = document.getElementById('mDetails');
+  const head = document.querySelector('#brandModal .modal-head');
+  const rows = [
+    ['Gegründet', b.gruendungsjahr],
+    ['Instagram', b.instagram],
+    ['Barcode / EAN', b.ean],
+    ['Eurolochung', b.eurolochung],
+  ];
+  const has = rows.some(r => r[1] != null && String(r[1]).trim() !== '');
+  if(!has){ box.innerHTML = ''; box.style.display = 'none'; if(head) head.classList.remove('has-details'); return; }
+  box.style.display = '';
+  if(head) head.classList.add('has-details');
+  box.innerHTML = rows.map(([k,v]) => {
+    const raw = (v != null && String(v).trim() !== '') ? String(v).trim() : '—';
+    const off = raw === '—' ? ' off' : '';
+    return `<span class="bd-i"><span class="bd-k">${escTxt(k)}</span> <span class="bd-v${off}">${escTxt(raw)}</span></span>`;
+  }).join('');
+}
 function openBrand(id, carry){
   activeBrand = dataProvider.getBrands().find(b => b.marken_id === id);
   activeCat = 'Alle';
@@ -1482,6 +1517,7 @@ function openBrand(id, carry){
     brandLogoHtml(activeBrand).replace('class="brand-logo "','class="brand-logo" id="mLogo"');
   document.getElementById('mName').textContent = activeBrand.name;
   renderBrandDesc(activeBrand);
+  renderBrandDetails(activeBrand);
   document.getElementById('mMeta').innerHTML = `
     ${activeBrand.sichtbar===false ? '<span class="meta-chip" style="background:#7a3fa0;color:#fff;font-weight:700">VORSCHAU — nicht öffentlich</span>' : ''}
     ${isRegistered()
@@ -1499,20 +1535,9 @@ function openBrand(id, carry){
   const _topCats = Object.keys(_catCount)
     .sort((a,b)=>_catCount[b]-_catCount[a]).slice(0,15)
     .sort((a,b)=>a.localeCompare(b,'de'));
-  // „Topseller" ist eine VIRTUELLE Kategorie: sie filtert auf featured, statt eine echte
-  // kategorie zu belegen — sonst würde ein Topseller aus seiner Sortiments-Kategorie
-  // verschwinden. Der Chip erscheint nur, wenn die MARKE ihre Topseller selbst genannt hat
-  // (brands.topseller_bestaetigt). Bei allen anderen sind die featured-Produkte nur von uns
-  // gewählte Startbilder — die als „Topseller" auszugeben wäre eine Behauptung über
-  // Verkaufszahlen, die wir gar nicht haben.
-  const hatTopseller = !!activeBrand.topseller_bestaetigt
-    && dataProvider.getProducts(id).some(p => p.featured);
-  // Topseller steht vorne, ist aber NICHT vorausgewählt: wer eine Marke öffnet, soll das
-  // Sortiment sehen, nicht nur fünf Artikel. Der Chip ist ein Angebot, kein Filter-Zwang.
-  const cats = [...(hatTopseller ? [TOPSELLER_CAT] : []), 'Alle', ..._topCats];
-  activeCat = 'Alle';
-  document.getElementById('mCats').innerHTML = cats.map(c =>
-    `<button class="cat-pill ${c==='Alle'?'active':''}" onclick="setCat(this,${JSON.stringify(c).replace(/"/g,'&quot;')})">${escTxt(c)}</button>`).join('');
+  const cats = ['Alle', ..._topCats];
+  document.getElementById('mCats').innerHTML = cats.map((c,i) =>
+    `<button class="cat-pill ${i===0?'active':''}" onclick="setCat(this,${JSON.stringify(c).replace(/"/g,'&quot;')})">${escTxt(c)}</button>`).join('');
   renderProducts();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('brandModal').classList.add('open');
@@ -1558,32 +1583,12 @@ function setCat(el, c){
 function renderProducts(){
   const M = makeMatcher(document.getElementById('prodSearch').value);
   let ps = dataProvider.getProducts(activeBrand.marken_id);
-  if(activeCat === TOPSELLER_CAT)      ps = ps.filter(p => p.featured);
-  else if(activeCat !== 'Alle')        ps = ps.filter(p => p.kategorie === activeCat);
+  if(activeCat !== 'Alle') ps = ps.filter(p => p.kategorie === activeCat);
   if(M.active) ps = ps.filter(p => M.test(p.produktname));
   // Reihenfolge: Treffer des aktiven Branchen-Filters zuerst, dann Featured (Hero), dann nach Position.
-  // ABER: Größenvarianten derselben Sorte (0,25 l / 0,1 l …) müssen nebeneinander stehen —
-  // sonst reißt ein Featured-Flag auf der großen Flasche die kleine ans Ende der Liste und der
-  // Händler sieht nicht, dass es dieselbe Sorte in zwei Größen gibt. Deshalb wird nicht das
-  // einzelne Produkt sortiert, sondern die SORTE: jede Gruppe erbt den besten Rang ihrer
-  // Mitglieder, innerhalb der Gruppe entscheidet die Position (große Flasche zuerst).
-  const groupKey = p => (p.produktname||'')
-    .replace(/\s*\d+(?:[.,]\d+)?\s*(?:ml|cl|l|g|kg|st(?:k|ück)?)\.?\s*$/i,'')
-    .trim().toLowerCase();
-  const rankOf = p => [
-    matchesActiveFilter(p)?0:1,
-    p.featured?0:1,
-    p.position==null?9999:p.position
-  ];
-  const cmp = (x,y) => x[0]-y[0] || x[1]-y[1] || x[2]-y[2];
-  const gRank = new Map();
-  for(const p of ps){
-    const k = groupKey(p), r = rankOf(p), cur = gRank.get(k);
-    if(!cur || cmp(r, cur) < 0) gRank.set(k, r);
-  }
   ps = ps.slice().sort((a,b)=>{
-    const ka = groupKey(a), kb = groupKey(b);
-    if(ka !== kb) return cmp(gRank.get(ka), gRank.get(kb)) || ka.localeCompare(kb,'de');
+    const ca = matchesActiveFilter(a)?0:1, cb = matchesActiveFilter(b)?0:1; if(ca!==cb) return ca-cb;
+    const fa = a.featured?0:1, fb = b.featured?0:1; if(fa!==fb) return fa-fb;
     return (a.position==null?9999:a.position) - (b.position==null?9999:b.position);
   });
   const grid = document.getElementById('prodGrid');
