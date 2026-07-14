@@ -190,7 +190,7 @@
   .modal-meta .btn{margin-left:auto}
   .modal-meta .modal-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
   .modal-meta .modal-actions .btn{margin-left:0}
-  /* Marken-Detailzeile (Gruendung, Instagram, EAN, Eurolochung) – schlank, volle Breite, Gravur */
+  /* Marken-Detailzeile (Gruendung, Social, EAN, Eurolochung) – schlank, volle Breite, Gravur */
   .modal-head.has-details{padding-bottom:3px}
   .brand-details{width:100%;display:flex;justify-content:space-between;align-items:stretch;
     border-top:1px solid var(--border);margin-top:9px;padding:3px 0 0;font-size:10px;letter-spacing:.02em}
@@ -201,6 +201,10 @@
   .brand-details .bd-k{color:#9aa0a8;text-shadow:0 1px 0 rgba(255,255,255,.9)}
   .brand-details .bd-v{color:#727880;text-shadow:0 1px 0 rgba(255,255,255,.9)}
   .brand-details .bd-v.off{color:#c2c7ce}
+  .brand-details .bd-sset{display:inline-flex;align-items:center;gap:7px}
+  .brand-details .bd-sic{width:14px;height:14px;color:#9298a0;display:inline-flex}
+  .brand-details .bd-sic svg{width:14px;height:14px}
+  .brand-details .bd-sic:hover{color:var(--accent)}
   @media(max-width:640px){
     .modal-head.has-details{padding-bottom:11px}
     .brand-details{flex-wrap:wrap;gap:4px 14px;font-size:10.5px}
@@ -1489,23 +1493,52 @@ function renderBrandDesc(b){
     }
   });
 }
+function socialUrl(platform, val){
+  if(val==null) return '';
+  val = String(val).trim();
+  if(/^https?:\/\//i.test(val)) return val;
+  const h = val.replace(/^@/, '');
+  const enc = encodeURIComponent(val);
+  const slug = encodeURIComponent(h.replace(/\s+/g,''));
+  const spaced = /\s/.test(h);
+  if(platform==='instagram') return 'https://instagram.com/'+slug;
+  if(platform==='tiktok')    return 'https://www.tiktok.com/@'+slug;
+  if(platform==='facebook')  return spaced ? 'https://www.facebook.com/search/top?q='+enc : 'https://facebook.com/'+slug;
+  if(platform==='linkedin')  return spaced ? 'https://www.linkedin.com/search/results/all/?keywords='+enc : 'https://www.linkedin.com/company/'+slug;
+  return '';
+}
 function renderBrandDetails(b){
   const box = document.getElementById('mDetails');
   const head = document.querySelector('#brandModal .modal-head');
-  const rows = [
-    ['Gegründet', b.gruendungsjahr],
-    ['Instagram', b.instagram],
-    ['Barcode / EAN', b.ean],
-    ['Eurolochung', b.eurolochung],
+  if(!box) return;
+  const IC = {
+    instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>',
+    facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7h2.3l.4-2.8h-2.7V9.4c0-.8.2-1.4 1.4-1.4h1.4V5.5c-.7-.1-1.4-.1-2.1-.1-2.1 0-3.5 1.3-3.5 3.6v2H8.3V14h2.4v7h2.8z"/></svg>',
+    tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 3c.3 2 1.6 3.5 3.5 3.8v2.4c-1.3 0-2.5-.4-3.5-1.1v5.6c0 2.9-2.3 5.3-5.2 5.3-2.9 0-5.2-2.4-5.2-5.3 0-2.7 2-4.9 4.6-5.2v2.5c-1.2.3-2.1 1.4-2.1 2.7 0 1.5 1.2 2.8 2.8 2.8s2.8-1.2 2.8-2.8V3H16z"/></svg>',
+    linkedin: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.94 5a1.94 1.94 0 1 1-3.88 0 1.94 1.94 0 0 1 3.88 0zM3.3 8.5h3.3V21H3.3zM9.2 8.5h3.16v1.7h.05c.44-.83 1.5-1.7 3.1-1.7 3.3 0 3.9 2.17 3.9 5V21h-3.3v-4.9c0-1.17-.02-2.67-1.63-2.67-1.63 0-1.88 1.27-1.88 2.58V21H9.2z"/></svg>'
+  };
+  const socials = [['instagram',b.instagram],['facebook',b.facebook],['tiktok',b.tiktok],['linkedin',b.linkedin]]
+    .filter(function(s){ return s[1]!=null && String(s[1]).trim()!==''; });
+  const socialHtml = socials.map(function(s){
+    const plat=s[0], val=String(s[1]).trim(), url=socialUrl(plat,val);
+    const label=plat.charAt(0).toUpperCase()+plat.slice(1);
+    return '<a class="bd-sic" href="'+esc(url)+'" target="_blank" rel="noopener" title="'+escTxt(label+': '+val)+'">'+IC[plat]+'</a>';
+  }).join('');
+  const cells = [
+    ['Gegründet', b.gruendungsjahr, 'text'],
+    ['Social', socialHtml, 'html'],
+    ['Barcode / EAN', b.ean, 'text'],
+    ['Eurolochung', b.eurolochung, 'text']
   ];
-  const has = rows.some(r => r[1] != null && String(r[1]).trim() !== '');
-  if(!has){ box.innerHTML = ''; box.style.display = 'none'; if(head) head.classList.remove('has-details'); return; }
-  box.style.display = '';
-  if(head) head.classList.add('has-details');
-  box.innerHTML = rows.map(([k,v]) => {
-    const raw = (v != null && String(v).trim() !== '') ? String(v).trim() : '—';
-    const off = raw === '—' ? ' off' : '';
-    return `<span class="bd-i"><span class="bd-k">${escTxt(k)}</span> <span class="bd-v${off}">${escTxt(raw)}</span></span>`;
+  const has = cells.some(function(c){ return c[2]==='html' ? !!c[1] : (c[1]!=null && String(c[1]).trim()!==''); });
+  if(!has){ box.innerHTML=''; box.style.display='none'; if(head) head.classList.remove('has-details'); return; }
+  box.style.display=''; if(head) head.classList.add('has-details');
+  box.innerHTML = cells.map(function(c){
+    const k=c[0], v=c[1], t=c[2];
+    let inner;
+    if(t==='html'){ inner = v ? '<span class="bd-sset">'+v+'</span>' : '<span class="bd-v off">—</span>'; }
+    else { const raw=(v!=null&&String(v).trim()!=='')?String(v).trim():'—'; inner='<span class="bd-v'+(raw==='—'?' off':'')+'">'+escTxt(raw)+'</span>'; }
+    return '<span class="bd-i"><span class="bd-k">'+escTxt(k)+'</span> '+inner+'</span>';
   }).join('');
 }
 function openBrand(id, carry){
