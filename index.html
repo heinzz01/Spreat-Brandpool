@@ -190,14 +190,11 @@
   .modal-meta .btn{margin-left:auto}
   .modal-meta .modal-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
   .modal-meta .modal-actions .btn{margin-left:0}
-  /* Marken-Detailzeile (Gruendung, Social, EAN, Eurolochung) – schlank, volle Breite, Gravur */
   .modal-head.has-details{padding-bottom:3px}
   .brand-details{width:100%;display:flex;justify-content:space-between;align-items:stretch;
     border-top:1px solid var(--border);margin-top:9px;padding:3px 0 0;font-size:10px;letter-spacing:.02em}
-  .brand-details .bd-i{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;
-    white-space:nowrap;position:relative}
-  .brand-details .bd-i+.bd-i::before{content:"";position:absolute;left:0;top:50%;
-    transform:translateY(-50%);height:1em;width:1px;background:var(--border)}
+  .brand-details .bd-i{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;position:relative}
+  .brand-details .bd-i+.bd-i::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);height:1em;width:1px;background:var(--border)}
   .brand-details .bd-k{color:#9aa0a8;text-shadow:0 1px 0 rgba(255,255,255,.9)}
   .brand-details .bd-v{color:#727880;text-shadow:0 1px 0 rgba(255,255,255,.9)}
   .brand-details .bd-v.off{color:#c2c7ce}
@@ -205,6 +202,11 @@
   .brand-details .bd-sic{width:14px;height:14px;color:#9298a0;display:inline-flex}
   .brand-details .bd-sic svg{width:14px;height:14px}
   .brand-details .bd-sic:hover{color:var(--accent)}
+  .cat-pill .cat-star{color:#f5b301;font-size:11px}
+  .cat-pill.active .cat-star{color:#fff}
+  .prod-thumb .ts-badge{position:absolute;top:7px;right:7px;z-index:4;width:20px;height:20px;
+    border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 1px 4px rgba(16,18,29,.18);
+    display:grid;place-items:center;font-size:12px;line-height:1;color:#f5b301}
   @media(max-width:640px){
     .modal-head.has-details{padding-bottom:11px}
     .brand-details{flex-wrap:wrap;gap:4px 14px;font-size:10.5px}
@@ -1477,7 +1479,6 @@ function renderBrands(){
 function renderBrandDesc(b){
   const wrap = document.getElementById('mTag');
   const txt = (b.beschreibung && b.beschreibung.trim()) ? b.beschreibung.trim() : (b.kurzbeschreibung || '');
-  // Absätze/Zeilenumbrüche der Beschreibung rendern (sichtbar v.a. im aufgeklappten Zustand)
   const descHtml = escTxt(txt).replace(/\n{2,}/g, '<br><br>').replace(/\n/g, '<br>');
   wrap.innerHTML = `<span class="desc-clamp">${descHtml}</span>`;
   const el = wrap.firstElementChild;
@@ -1568,9 +1569,10 @@ function openBrand(id, carry){
   const _topCats = Object.keys(_catCount)
     .sort((a,b)=>_catCount[b]-_catCount[a]).slice(0,15)
     .sort((a,b)=>a.localeCompare(b,'de'));
-  const cats = ['Alle', ..._topCats];
+  const _hasTop = dataProvider.getProducts(id).some(p => p.featured_bestaetigt);
+  const cats = ['Alle', ...(_hasTop ? ['Top Seller'] : []), ..._topCats];
   document.getElementById('mCats').innerHTML = cats.map((c,i) =>
-    `<button class="cat-pill ${i===0?'active':''}" onclick="setCat(this,${JSON.stringify(c).replace(/"/g,'&quot;')})">${escTxt(c)}</button>`).join('');
+    `<button class="cat-pill ${i===0?'active':''}" onclick="setCat(this,${JSON.stringify(c).replace(/"/g,'&quot;')})">${c==='Top Seller' ? '<span class="cat-star">★</span> ' : ''}${escTxt(c)}</button>`).join('');
   renderProducts();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('brandModal').classList.add('open');
@@ -1616,7 +1618,8 @@ function setCat(el, c){
 function renderProducts(){
   const M = makeMatcher(document.getElementById('prodSearch').value);
   let ps = dataProvider.getProducts(activeBrand.marken_id);
-  if(activeCat !== 'Alle') ps = ps.filter(p => p.kategorie === activeCat);
+  if(activeCat === 'Top Seller') ps = ps.filter(p => p.featured_bestaetigt);
+  else if(activeCat !== 'Alle') ps = ps.filter(p => p.kategorie === activeCat);
   if(M.active) ps = ps.filter(p => M.test(p.produktname));
   // Reihenfolge: Treffer des aktiven Branchen-Filters zuerst, dann Featured (Hero), dann nach Position.
   ps = ps.slice().sort((a,b)=>{
@@ -1632,6 +1635,7 @@ function renderProducts(){
     const tip = `Bei einer Provision von ${p.provision_prozent} % bekommst du ${eur(marge)} Marge pro verkauftem Stück (UVP ${eur(p.uvp_preis)}). Der Provisionssatz ist ein Ø-Richtwert und kann je nach Verhandlung noch abweichen.`;
     return `<div class="prod-card" onclick="openProduct('${p.produkt_id}')">
       <div class="prod-thumb" data-gidx="0">
+        ${p.featured_bestaetigt ? '<span class="ts-badge" title="Top Seller">★</span>' : ''}
         ${prodGallery(p)}
       </div>
       <div class="prod-info">
