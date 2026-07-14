@@ -1124,6 +1124,8 @@ let calcOn = true;          // Margen-Rechner an/aus (von der Bestellung getrenn
 let myRequests = [];        // gesendete Anfragen dieser Session (Anfrageübersicht)
 let activeBrand = null;
 let activeCat = 'Alle';
+// Virtuelle Kategorie: filtert auf featured statt auf products.kategorie (siehe openBrand).
+const TOPSELLER_CAT = '⭐ Topseller';
 let reqGroupCount = 0;
 let pendingLoginEmail = '';
 let pendingProfile = null;
@@ -1144,6 +1146,11 @@ function prodImg(p){
   return '📦';
 }
 /* --- Mehrbild-Galerie (Hover + Pfeile) --- */
+// ⚠️ UMSTELLUNG AUF CLOUDFLARE R2 — siehe Brandpool/BILDSPEICHER.md
+// Das hier ist die EINZIGE Stelle im Frontend, die den Bildhost kennt.
+// Nach der Migration (r2_migrate.py + r2_rewrite_bild_url.sql) ersetzen durch:
+//   const STORAGE_BASE = 'https://img.spreat.com/';
+// Vorher NICHT anfassen — die DB zeigt noch auf Supabase Storage.
 const STORAGE_BASE = 'https://lzgrcnkatchkrvlrjnxa.supabase.co/storage/v1/object/public/markenpool/';
 const storageUrl = path => /^https?:\/\//.test(path) ? path : STORAGE_BASE + String(path||'').replace(/^\/+/,'');
 // Externe Shopify-Bilder on-the-fly verkleinern (lokale Supabase-Bilder unverändert)
@@ -1450,7 +1457,9 @@ function renderBrands(){
 function renderBrandDesc(b){
   const wrap = document.getElementById('mTag');
   const txt = (b.beschreibung && b.beschreibung.trim()) ? b.beschreibung.trim() : (b.kurzbeschreibung || '');
-  wrap.innerHTML = `<span class="desc-clamp">${escTxt(txt)}</span>`;
+  // Absätze/Zeilenumbrüche der Beschreibung rendern (sichtbar v.a. im aufgeklappten Zustand)
+  const descHtml = escTxt(txt).replace(/\n{2,}/g, '<br><br>').replace(/\n/g, '<br>');
+  wrap.innerHTML = `<span class="desc-clamp">${descHtml}</span>`;
   const el = wrap.firstElementChild;
   // Erst nach dem Öffnen (Modal display:flex) messen, ob der Text über 3 Zeilen geht.
   // setTimeout statt requestAnimationFrame: rAF ist in Hintergrund-Tabs pausiert.
@@ -1490,9 +1499,20 @@ function openBrand(id, carry){
   const _topCats = Object.keys(_catCount)
     .sort((a,b)=>_catCount[b]-_catCount[a]).slice(0,15)
     .sort((a,b)=>a.localeCompare(b,'de'));
-  const cats = ['Alle', ..._topCats];
-  document.getElementById('mCats').innerHTML = cats.map((c,i) =>
-    `<button class="cat-pill ${i===0?'active':''}" onclick="setCat(this,${JSON.stringify(c).replace(/"/g,'&quot;')})">${escTxt(c)}</button>`).join('');
+  // „Topseller" ist eine VIRTUELLE Kategorie: sie filtert auf featured, statt eine echte
+  // kategorie zu belegen — sonst würde ein Topseller aus seiner Sortiments-Kategorie
+  // verschwinden. Der Chip erscheint nur, wenn die MARKE ihre Topseller selbst genannt hat
+  // (brands.topseller_bestaetigt). Bei allen anderen sind die featured-Produkte nur von uns
+  // gewählte Startbilder — die als „Topseller" auszugeben wäre eine Behauptung über
+  // Verkaufszahlen, die wir gar nicht haben.
+  const hatTopseller = !!activeBrand.topseller_bestaetigt
+    && dataProvider.getProducts(id).some(p => p.featured);
+  // Topseller steht vorne, ist aber NICHT vorausgewählt: wer eine Marke öffnet, soll das
+  // Sortiment sehen, nicht nur fünf Artikel. Der Chip ist ein Angebot, kein Filter-Zwang.
+  const cats = [...(hatTopseller ? [TOPSELLER_CAT] : []), 'Alle', ..._topCats];
+  activeCat = 'Alle';
+  document.getElementById('mCats').innerHTML = cats.map(c =>
+    `<button class="cat-pill ${c==='Alle'?'active':''}" onclick="setCat(this,${JSON.stringify(c).replace(/"/g,'&quot;')})">${escTxt(c)}</button>`).join('');
   renderProducts();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('brandModal').classList.add('open');
@@ -1538,12 +1558,32 @@ function setCat(el, c){
 function renderProducts(){
   const M = makeMatcher(document.getElementById('prodSearch').value);
   let ps = dataProvider.getProducts(activeBrand.marken_id);
-  if(activeCat !== 'Alle') ps = ps.filter(p => p.kategorie === activeCat);
+  if(activeCat === TOPSELLER_CAT)      ps = ps.filter(p => p.featured);
+  else if(activeCat !== 'Alle')        ps = ps.filter(p => p.kategorie === activeCat);
   if(M.active) ps = ps.filter(p => M.test(p.produktname));
   // Reihenfolge: Treffer des aktiven Branchen-Filters zuerst, dann Featured (Hero), dann nach Position.
+  // ABER: Größenvarianten derselben Sorte (0,25 l / 0,1 l …) müssen nebeneinander stehen —
+  // sonst reißt ein Featured-Flag auf der großen Flasche die kleine ans Ende der Liste und der
+  // Händler sieht nicht, dass es dieselbe Sorte in zwei Größen gibt. Deshalb wird nicht das
+  // einzelne Produkt sortiert, sondern die SORTE: jede Gruppe erbt den besten Rang ihrer
+  // Mitglieder, innerhalb der Gruppe entscheidet die Position (große Flasche zuerst).
+  const groupKey = p => (p.produktname||'')
+    .replace(/\s*\d+(?:[.,]\d+)?\s*(?:ml|cl|l|g|kg|st(?:k|ück)?)\.?\s*$/i,'')
+    .trim().toLowerCase();
+  const rankOf = p => [
+    matchesActiveFilter(p)?0:1,
+    p.featured?0:1,
+    p.position==null?9999:p.position
+  ];
+  const cmp = (x,y) => x[0]-y[0] || x[1]-y[1] || x[2]-y[2];
+  const gRank = new Map();
+  for(const p of ps){
+    const k = groupKey(p), r = rankOf(p), cur = gRank.get(k);
+    if(!cur || cmp(r, cur) < 0) gRank.set(k, r);
+  }
   ps = ps.slice().sort((a,b)=>{
-    const ca = matchesActiveFilter(a)?0:1, cb = matchesActiveFilter(b)?0:1; if(ca!==cb) return ca-cb;
-    const fa = a.featured?0:1, fb = b.featured?0:1; if(fa!==fb) return fa-fb;
+    const ka = groupKey(a), kb = groupKey(b);
+    if(ka !== kb) return cmp(gRank.get(ka), gRank.get(kb)) || ka.localeCompare(kb,'de');
     return (a.position==null?9999:a.position) - (b.position==null?9999:b.position);
   });
   const grid = document.getElementById('prodGrid');
