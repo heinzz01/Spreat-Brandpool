@@ -202,6 +202,13 @@
   .brand-details .bd-sic{width:14px;height:14px;color:#9298a0;display:inline-flex}
   .brand-details .bd-sic svg{width:14px;height:14px}
   .brand-details .bd-sic:hover{color:var(--accent)}
+  .brand-details .bd-link{color:var(--accent);border-bottom:1px dotted currentColor;cursor:pointer;
+    background:none;border-top:0;border-left:0;border-right:0;padding:0;font:inherit;text-shadow:0 1px 0 rgba(255,255,255,.9)}
+  .brand-details .bd-link:hover{color:var(--accent-d,var(--accent));border-bottom-style:solid}
+  .gl-sub{margin:0 0 12px;font-size:13px;color:var(--muted)}
+  .gl-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .gl-chips span{font-size:13px;background:var(--bg);border:1px solid var(--border);
+    color:var(--text);padding:4px 10px;border-radius:8px}
   .cat-pill .cat-star{color:#f5b301;font-size:11px}
   .cat-pill.active .cat-star{color:#fff}
   .prod-thumb .ts-badge{position:absolute;top:7px;right:7px;z-index:4;width:20px;height:20px;
@@ -988,6 +995,16 @@
 </div>
 
 <!-- Produkt-Detail-Popup -->
+<div class="popup" id="gelistetPopup">
+  <div class="popup-head">
+    <h3>Gelistet in</h3>
+    <button class="x-close" style="margin-left:auto" onclick="closeGelistet()">✕</button>
+  </div>
+  <div class="popup-body">
+    <p class="gl-sub" id="glSub"></p>
+    <div class="gl-chips" id="glChips"></div>
+  </div>
+</div>
 <div class="popup pd" id="productPopup">
   <button class="x-close pd-x" onclick="closeProduct()">✕</button>
   <div class="pd-grid">
@@ -1508,6 +1525,28 @@ function socialUrl(platform, val){
   if(platform==='linkedin')  return spaced ? 'https://www.linkedin.com/search/results/all/?keywords='+enc : 'https://www.linkedin.com/company/'+slug;
   return '';
 }
+// Komma-Liste sauberer Kanalnamen -> Array. Die Redaktion passiert beim Einpflegen
+// (siehe marken-detail-feedback-workflow.md); hier wird nur getrennt und geputzt.
+function gelistetListe(v){
+  if(v == null) return [];
+  return String(v).split(',').map(s => s.trim()).filter(Boolean);
+}
+function openGelistet(){
+  if(!activeBrand) return;
+  const liste = gelistetListe(activeBrand.bereits_gelistet);
+  if(!liste.length) return;
+  document.getElementById('glSub').textContent = 'Wo ' + activeBrand.name + ' bereits im Handel ist';
+  document.getElementById('glChips').innerHTML = liste.map(k => '<span>' + escTxt(k) + '</span>').join('');
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('gelistetPopup').classList.add('open');
+}
+function closeGelistet(){
+  document.getElementById('gelistetPopup').classList.remove('open');
+  // Das Marken-Modal bleibt offen — nur das Overlay muss bleiben, solange es offen ist.
+  if(!document.getElementById('brandModal').classList.contains('open')){
+    document.getElementById('overlay').classList.remove('open');
+  }
+}
 function renderBrandDetails(b){
   const box = document.getElementById('mDetails');
   const head = document.querySelector('#brandModal .modal-head');
@@ -1525,11 +1564,20 @@ function renderBrandDetails(b){
     const label=plat.charAt(0).toUpperCase()+plat.slice(1);
     return '<a class="bd-sic" href="'+esc(url)+'" target="_blank" rel="noopener" title="'+escTxt(label+': '+val)+'">'+IC[plat]+'</a>';
   }).join('');
+  // „Gelistet in" ist der einzige Wert, der beliebig lang werden kann (2 bis 12 Kanäle).
+  // Deshalb steht in der Zeile nur die ANZAHL, die volle Liste kommt ins Popup — sonst
+  // sprengt eine Marke mit acht Kanälen die Zeile, die sonst nur Jahreszahlen und Ja/Nein hält.
+  const kanaele = gelistetListe(b.bereits_gelistet);
+  const gelistetHtml = kanaele.length
+    ? '<button type="button" class="bd-link" onclick="openGelistet()">'
+      + escTxt(kanaele.length + (kanaele.length === 1 ? ' Kanal' : ' Kanälen')) + '</button>'
+    : '';
   const cells = [
     ['Gegründet', b.gruendungsjahr, 'text'],
     ['Social', socialHtml, 'html'],
     ['Barcode / EAN', b.ean, 'text'],
-    ['Eurolochung', b.eurolochung, 'text']
+    ['Eurolochung', b.eurolochung, 'text'],
+    ['Gelistet in', gelistetHtml, 'html']
   ];
   const has = cells.some(function(c){ return c[2]==='html' ? !!c[1] : (c[1]!=null && String(c[1]).trim()!==''); });
   if(!has){ box.innerHTML=''; box.style.display='none'; if(head) head.classList.remove('has-details'); return; }
@@ -2397,7 +2445,7 @@ function openCart(){
   document.getElementById('drawer').classList.add('open');
 }
 function closeAll(fromPop){
-  ['overlay','brandModal','drawer','contactPopup','requestPopup','requestsPopup','faqPopup','flowPopup','navMenu','profilePopup','loginPopup','productPopup']
+  ['overlay','brandModal','drawer','contactPopup','requestPopup','requestsPopup','faqPopup','flowPopup','navMenu','profilePopup','loginPopup','productPopup','gelistetPopup']
     .forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('open'); });
   document.body.classList.remove('shopview');
   if(!fromPop && new URLSearchParams(location.search).get('marke')) history.pushState({},'',location.pathname);
