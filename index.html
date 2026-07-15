@@ -188,8 +188,20 @@
   .meta-chip{background:var(--bg);border-radius:9px;padding:7px 12px;font-size:12.5px}
   .meta-chip b{font-weight:700}
   .modal-meta .btn{margin-left:auto}
-  .modal-meta .modal-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .modal-meta .modal-actions{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
   .modal-meta .modal-actions .btn{margin-left:0}
+  /* Website: Textlink statt Button — nur der Kontakt-Button bleibt als CTA.
+     Unterstrich fährt beim Hover von links ein, Pfeil wandert mit. */
+  .web-link{background:none;border:none;padding:0 2px 3px;font:inherit;font-size:13.5px;
+    font-weight:700;letter-spacing:-.01em;color:var(--text);text-decoration:none;cursor:pointer;
+    display:inline-flex;align-items:center;gap:9px;position:relative;white-space:nowrap;
+    align-self:center}
+  .web-link::after{content:"";position:absolute;left:0;bottom:0;height:1.5px;width:100%;
+    background:var(--text);transform:scaleX(0);transform-origin:right;
+    transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  .web-link:hover::after{transform:scaleX(1);transform-origin:left}
+  .web-link .ar{transition:transform .2s ease;font-weight:400}
+  .web-link:hover .ar{transform:translateX(3px)}
   .modal-head.has-details{padding-bottom:3px}
   .brand-details{width:100%;display:flex;justify-content:space-between;align-items:stretch;
     border-top:1px solid var(--border);margin-top:9px;padding:3px 0 0;font-size:10px;letter-spacing:.02em}
@@ -487,8 +499,10 @@
     .modal-head .brand-logo{width:42px;height:42px;font-size:15px}
     .modal-title h2{font-size:17px}
     .modal-meta{gap:7px;margin-top:10px}
-    .modal-meta .modal-actions{flex:1 1 100%;margin-left:0}
+    .modal-meta .modal-actions{flex:1 1 100%;margin-left:0;gap:14px}
     .modal-meta .modal-actions .btn{flex:1 1 0;text-align:center}
+    /* Textlink bleibt schmal, nur der Kontakt-Button füllt die Restbreite */
+    .modal-meta .modal-actions .web-link{flex:0 0 auto}
     .modal-toolbar{padding:11px 16px;gap:8px}
     .modal-toolbar .search{min-width:0;flex:1 1 100%}
     .modal-body{padding:14px 16px 28px;flex:none;overflow:visible}
@@ -1608,7 +1622,7 @@ function openBrand(id, carry){
     <span class="meta-chip" data-tip="${esc(TIP.avg)}">Ø Warenkorb <b>${eur(activeBrand.avgCart)}</b></span>
     <span class="meta-chip" data-tip="${esc(TIP.count)}">${activeBrand.productCount} Produkte</span>
     <div class="modal-actions">
-      ${activeBrand.website ? `<a class="btn btn-ghost" href="${esc(activeBrand.website)}" target="_blank" rel="noopener">Website ➜</a>` : ''}
+      ${activeBrand.website ? `<a class="web-link" href="${esc(activeBrand.website)}" target="_blank" rel="noopener">Website <span class="ar">→</span></a>` : ''}
       <button class="btn btn-ghost" onclick="openContact('${activeBrand.marken_id}')">✉︎ Lieferant kontaktieren</button>
     </div>`;
   // Kategorien: die 15 häufigsten auswählen, dann alphabetisch (A–Z) anzeigen
