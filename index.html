@@ -1622,9 +1622,28 @@ function renderProducts(){
   else if(activeCat !== 'Alle') ps = ps.filter(p => p.kategorie === activeCat);
   if(M.active) ps = ps.filter(p => M.test(p.produktname));
   // Reihenfolge: Treffer des aktiven Branchen-Filters zuerst, dann Featured (Hero), dann nach Position.
+  // ABER: Größenvarianten derselben Sorte (0,25 l / 0,1 l …) müssen nebeneinander stehen —
+  // sonst reißt ein Featured-Flag auf der großen Flasche die kleine ans Ende der Liste und der
+  // Händler sieht nicht, dass es dieselbe Sorte in zwei Größen gibt. Deshalb wird nicht das
+  // einzelne Produkt sortiert, sondern die SORTE: jede Gruppe erbt den besten Rang ihrer
+  // Mitglieder, innerhalb der Gruppe entscheidet die Position (große Flasche zuerst).
+  const groupKey = p => (p.produktname||'')
+    .replace(/\s*\d+(?:[.,]\d+)?\s*(?:ml|cl|l|g|kg|st(?:k|ück)?)\.?\s*$/i,'')
+    .trim().toLowerCase();
+  const rankOf = p => [
+    matchesActiveFilter(p)?0:1,
+    p.featured?0:1,
+    p.position==null?9999:p.position
+  ];
+  const cmpRank = (x,y) => x[0]-y[0] || x[1]-y[1] || x[2]-y[2];
+  const gRank = new Map();
+  for(const p of ps){
+    const k = groupKey(p), r = rankOf(p), cur = gRank.get(k);
+    if(!cur || cmpRank(r, cur) < 0) gRank.set(k, r);
+  }
   ps = ps.slice().sort((a,b)=>{
-    const ca = matchesActiveFilter(a)?0:1, cb = matchesActiveFilter(b)?0:1; if(ca!==cb) return ca-cb;
-    const fa = a.featured?0:1, fb = b.featured?0:1; if(fa!==fb) return fa-fb;
+    const ka = groupKey(a), kb = groupKey(b);
+    if(ka !== kb) return cmpRank(gRank.get(ka), gRank.get(kb)) || ka.localeCompare(kb,'de');
     return (a.position==null?9999:a.position) - (b.position==null?9999:b.position);
   });
   const grid = document.getElementById('prodGrid');
