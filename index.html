@@ -1216,7 +1216,12 @@ function katBadgeHtml(b){
 }
 function brandLogoHtml(b, cls){
   // onerror: fehlt die Logo-Datei, erscheint statt eines kaputten Bild-Icons das Kürzel der Marke
-  if(b.logo_url) return `<div class="brand-logo ${cls||''}"><img src="${esc(b.logo_url)}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.textContent='${esc(initials(b.name))}'"></div>`;
+  // storageUrl() ist Pflicht: logo_url ist seit der R2-Vorbereitung ein PFAD ('logos/x.webp'),
+  // kein Host. Roh ins src gesetzt liest der Browser das relativ (brandpool.spreat.com/logos/x.webp)
+  // -> 404 -> der onerror-Fallback zeigt die Initialen. Genau so sind 16 Marken monatelang ohne
+  // Logo gelaufen, obwohl logo_url gesetzt war und der Nachtlauf "Logo vorhanden" meldete.
+  // Volle URLs (Altbestand) lässt storageUrl() unangetastet durch.
+  if(b.logo_url) return `<div class="brand-logo ${cls||''}"><img src="${esc(storageUrl(b.logo_url))}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.textContent='${esc(initials(b.name))}'"></div>`;
   return `<div class="brand-logo ${cls||''}" style="background:${b.color}">${initials(b.name)}</div>`;
 }
 function prodImg(p){
