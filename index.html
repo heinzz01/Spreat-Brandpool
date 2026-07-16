@@ -1188,6 +1188,32 @@ let session = {loggedIn:false, email:null, profile:null};
 /* ============================================================
    Brand rows
    ============================================================ */
+// Zugeordnete Sortimentswelt einer Marke — wird NUR im Vorschau-/Draft-Zustand gezeigt
+// (sichtbar=false, also nur für Admins sichtbar). Grund: Beim nächtlichen Onboarding rät der
+// Task die Welt aus den Produkten; Heinz-Peter muss sie vor der Freigabe gegenprüfen. Bis
+// 2026-07-16 stand sie nur in der Digest-Mail — man musste also zwischen Mail und Profil hin
+// und her springen. Für freigegebene Marken ist die Angabe überflüssig: Händler kommen ohnehin
+// über den Kategorie-Filter aufs Profil.
+function katChipHtml(b){
+  if(!b.kategorie_haupt) {
+    return '<span class="meta-chip" style="background:#fdecea;color:#c1503f;font-weight:700">'
+         + 'Kategorie fehlt</span>';
+  }
+  const txt = b.kategorie_unter ? b.kategorie_haupt + ' › ' + b.kategorie_unter : b.kategorie_haupt;
+  return '<span class="meta-chip" style="background:#f3ecfa;color:#5b2d80" '
+       + 'data-tip="Vom nächtlichen Onboarding zugeordnete Sortimentswelt. Vor der Freigabe prüfen.">'
+       + 'Kategorie <b>' + escTxt(txt) + '</b></span>';
+}
+// Dasselbe für die Markenzeile in der Liste — dort reicht die WELT (ohne Unterkategorie),
+// damit die Zeile nicht umbricht; das Detail steht dann im Profil.
+function katBadgeHtml(b){
+  if(!b.kategorie_haupt) {
+    return ' <span style="background:#fdecea;color:#c1503f;font-size:10px;font-weight:700;padding:2px 8px;'
+         + 'border-radius:999px;vertical-align:middle;white-space:nowrap">Kategorie fehlt</span>';
+  }
+  return ' <span style="background:#f3ecfa;color:#5b2d80;font-size:10px;font-weight:700;padding:2px 8px;'
+       + 'border-radius:999px;vertical-align:middle;white-space:nowrap">' + escTxt(b.kategorie_haupt) + '</span>';
+}
 function brandLogoHtml(b, cls){
   // onerror: fehlt die Logo-Datei, erscheint statt eines kaputten Bild-Icons das Kürzel der Marke
   if(b.logo_url) return `<div class="brand-logo ${cls||''}"><img src="${esc(b.logo_url)}" alt="" loading="lazy" decoding="async" onerror="this.parentNode.textContent='${esc(initials(b.name))}'"></div>`;
@@ -1463,7 +1489,7 @@ function renderBrands(){
         <div class="brand-row-id">
           ${brandLogoHtml(b)}
           <div class="brand-head-text">
-            <div class="brand-name">${escTxt(b.name)}${b.sichtbar===false ? ' <span style="background:#7a3fa0;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;vertical-align:middle;white-space:nowrap">VORSCHAU — nicht öffentlich</span>' : ''}</div>
+            <div class="brand-name">${escTxt(b.name)}${b.sichtbar===false ? ' <span style="background:#7a3fa0;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;vertical-align:middle;white-space:nowrap">VORSCHAU — nicht öffentlich</span>' + katBadgeHtml(b) : ''}</div>
             <div class="brand-tag">${escTxt(b.kurzbeschreibung)}</div>
           </div>
         </div>
@@ -1616,6 +1642,7 @@ function openBrand(id, carry){
   renderBrandDetails(activeBrand);
   document.getElementById('mMeta').innerHTML = `
     ${activeBrand.sichtbar===false ? '<span class="meta-chip" style="background:#7a3fa0;color:#fff;font-weight:700">VORSCHAU — nicht öffentlich</span>' : ''}
+    ${activeBrand.sichtbar===false ? katChipHtml(activeBrand) : ''}
     ${isRegistered()
       ? `<span class="meta-chip" data-tip="${esc(TIP.prov)}">Ø Laden-Provision <b>${provLabel(activeBrand)}</b></span>`
       : `<span class="meta-chip pl-lockbadge" data-tip="${esc(TIP.provlocked)}" style="cursor:pointer">${provLocked(provLabel(activeBrand))}</span>`}
