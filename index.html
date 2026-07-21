@@ -530,6 +530,8 @@
   .fchip.fchip-mine{border-color:#22c55e;color:#15803d;background:#f0fdf4;font-weight:700}
   .fchip.fchip-mine:hover{border-color:#16a34a;background:#dcfce7}
   .fchip.fchip-mine.active{background:#16a34a;border-color:#16a34a;color:#fff}
+  .fchip-mine .fchip-i{margin-left:6px;background:rgba(21,128,61,.15);color:#15803d;vertical-align:middle;font-style:normal}
+  .fchip.fchip-mine.active .fchip-i{background:rgba(255,255,255,.28);color:#fff}
   .fchip .n{color:var(--muted);font-weight:600;font-size:11.5px}
   .fchip.active{background:var(--accent);border-color:var(--accent);color:#fff}
   .fchip.active .n{color:#cdeed9}
@@ -1178,6 +1180,7 @@ const TIP = {
   revenue:'Gesamter Verkaufswert pro Monat zu UVP — der Umsatz, bevor der Lieferant seinen Anteil erhält.',
   avgprov:'Gewichteter Durchschnitt der Provisionssätze aller Produkte in deiner Anfrage.',
   netmargin:'Dein Verdienst pro Monat: Umsatz × Provision. Dieser Betrag bleibt bei dir.',
+  mine:'Diese Marken haben bei ihrer Registrierung angegeben, dass sie gern in Läden wie deinem verkaufen würden. Wir gleichen ihren Wunsch-Vertriebskanal mit der Branche aus deinem Händler-Profil ab — passt beides zusammen, erscheint die Marke hier. Deine Branche kannst du jederzeit im Profil ändern.',
 };
 
 let cart = {};
@@ -1364,7 +1367,7 @@ function renderFilterBar(){
   const bar=document.getElementById('filterbar'); if(!bar) return;
   const _my = getMyBranches();
   let r1=`<div class="filter-row">`;
-  if(_my){ r1+=`<button class="fchip fchip-mine ${FILTER.mine?'active':''}" onclick="setMine()">✨ Marken, die bei dir verkaufen wollen</button>`; }
+  if(_my){ r1+=`<button class="fchip fchip-mine ${FILTER.mine?'active':''}" onclick="setMine()">✨ Marken für deine Branche <span class="info-ic fchip-i" data-tip="${esc(TIP.mine)}">i</span></button>`; }
   r1+=`<button class="fchip ${(!FILTER.haupt && !FILTER.mine)?'active':''}" onclick="setHaupt(null)">Alle Lieferanten</button>`;
   TAXO.forEach(t=>{ r1+=`<button class="fchip ${FILTER.haupt===t.haupt?'active':''}" onclick="setHaupt('${jsq(t.haupt)}')">${escTxt(t.haupt)}</button>`; });
   r1+=`</div>`;
@@ -1397,7 +1400,7 @@ function renderSearchFilterBadge(){
 }
 function renderMobileBtn(){
   const val=document.getElementById('fbVal'), badge=document.getElementById('fbBadge'); if(!val) return;
-  if(FILTER.mine){ val.textContent='Für dich empfohlen'; badge.style.display='none'; }
+  if(FILTER.mine){ val.textContent='Für deine Branche'; badge.style.display='none'; }
   else if(FILTER.haupt){ val.textContent=FILTER.unter?FILTER.haupt+' › '+FILTER.unter:FILTER.haupt; badge.style.display=''; badge.textContent=FILTER.unter?'2':'1'; }
   else { val.textContent='Alle Lieferanten'; badge.style.display='none'; }
 }
@@ -1408,7 +1411,7 @@ function resetFilter(){ FILTER={haupt:null,unter:null,mine:false}; renderFilterB
 function renderFilterSheet(){
   const body=document.getElementById('filterSheetBody'); if(!body) return;
   const _my = getMyBranches();
-  let h = _my ? `<div class="fs-item ${FILTER.mine?'open':''}"><button class="fs-haupt fs-mine ${FILTER.mine?'sel':''}" onclick="setMine();closeFilterSheet()">✨ Marken, die bei dir verkaufen wollen</button></div>` : '';
+  let h = _my ? `<div class="fs-item ${FILTER.mine?'open':''}"><button class="fs-haupt fs-mine ${FILTER.mine?'sel':''}" onclick="setMine();closeFilterSheet()">✨ Marken für deine Branche</button></div>` : '';
   h+=`<div class="fs-item ${(!FILTER.haupt&&!FILTER.mine)?'open':''}"><button class="fs-haupt ${(!FILTER.haupt&&!FILTER.mine)?'sel':''}" onclick="setHaupt(null);renderFilterSheet()">Alle Lieferanten</button></div>`;
   TAXO.forEach(t=>{
     const open=FILTER.haupt===t.haupt;
@@ -1499,7 +1502,7 @@ function renderBrands(){
     // Such-Treffer (nur wenn die Suche die Marke selbst NICHT trifft)
     const searchHits = (M.active && !brandMatch) ? prods.filter(p => M.test(p.produktname)) : [];
     // Kontext aus aktivem Branchen-Filter (z.B. Könner&Söhne unter "Kochen & Essen")
-    const filterHits = (!searchHits.length && FILTER.haupt) ? prods.filter(matchesActiveFilter) : [];
+    const filterHits = (!searchHits.length && FILTER.haupt) ? prods.filter(p => p.sichtbar!==false && matchesActiveFilter(p)) : [];
     let preview;
     if(searchHits.length){
       // Reine Produktsuche: NUR die Treffer im Hero, kein Auffüllen mit Featured
@@ -1510,8 +1513,9 @@ function renderBrands(){
       // Kategorie-Kontext greift — Rest der Treffer füllt auf.
       preview = [...filterHits.filter(p=>p.featured), ...filterHits.filter(p=>!p.featured)].slice(0,5);
     } else {
-      preview = prods.filter(p => p.featured).slice(0,5);
-      if(preview.length < 5) preview = [...preview, ...prods.filter(p=>!p.featured)].slice(0,5);
+      const vis = prods.filter(p => p.sichtbar!==false);   // Vorschau-Strip = nur sichtbare (wie Enduser)
+      preview = vis.filter(p => p.featured).slice(0,5);
+      if(preview.length < 5) preview = [...preview, ...vis.filter(p=>!p.featured)].slice(0,5);
     }
     const previewIds = new Set(preview.map(p=>p.produkt_id));
     const rest = prods.filter(p=>!previewIds.has(p.produkt_id)).length;
@@ -1763,11 +1767,12 @@ function renderProducts(){
     .replace(/\s*\d+(?:[.,]\d+)?\s*(?:ml|cl|l|g|kg|st(?:k|ück)?)\.?\s*$/i,'')
     .trim().toLowerCase();
   const rankOf = p => [
+    p.sichtbar===false?1:0,   // ausgeblendete (nur Admin sichtbar) IMMER ans Ende
     matchesActiveFilter(p)?0:1,
     p.featured?0:1,
     p.position==null?9999:p.position
   ];
-  const cmpRank = (x,y) => x[0]-y[0] || x[1]-y[1] || x[2]-y[2];
+  const cmpRank = (x,y) => x[0]-y[0] || x[1]-y[1] || x[2]-y[2] || x[3]-y[3];
   const gRank = new Map();
   for(const p of ps){
     const k = groupKey(p), r = rankOf(p), cur = gRank.get(k);
@@ -1776,7 +1781,7 @@ function renderProducts(){
   ps = ps.slice().sort((a,b)=>{
     const ka = groupKey(a), kb = groupKey(b);
     if(ka !== kb) return cmpRank(gRank.get(ka), gRank.get(kb)) || ka.localeCompare(kb,'de');
-    return (a.position==null?9999:a.position) - (b.position==null?9999:b.position);
+    return ((a.sichtbar===false?1:0)-(b.sichtbar===false?1:0)) || ((a.position==null?9999:a.position) - (b.position==null?9999:b.position));
   });
   const grid = document.getElementById('prodGrid');
   if(!ps.length){ grid.innerHTML = '<div class="no-results">Keine Produkte gefunden.</div>'; return; }
