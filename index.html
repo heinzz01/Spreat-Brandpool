@@ -527,6 +527,9 @@
     border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;
     font-weight:600;cursor:pointer;white-space:nowrap;transition:.12s;line-height:1}
   .fchip:hover{border-color:#c7cbd4;background:#fafbfc}
+  .fchip.fchip-mine{border-color:#22c55e;color:#15803d;background:#f0fdf4;font-weight:700}
+  .fchip.fchip-mine:hover{border-color:#16a34a;background:#dcfce7}
+  .fchip.fchip-mine.active{background:#16a34a;border-color:#16a34a;color:#fff}
   .fchip .n{color:var(--muted);font-weight:600;font-size:11.5px}
   .fchip.active{background:var(--accent);border-color:var(--accent);color:#fff}
   .fchip.active .n{color:#cdeed9}
@@ -1056,6 +1059,7 @@ const ADMIN_EMAILS = ['hp@hoelscher-online.com','mattis@spreat.com','paul@spreat
 let isAdmin = false;
 
 let _brands = null, _products = [];
+let _wunschById = {};  // marken_id -> wunsch_vertriebskanaele[] (Haendler-Matching)
 let productsLoaded = false;
 
 const dataProvider = {
@@ -1065,6 +1069,8 @@ const dataProvider = {
     const {data:bd,error:be} = await bq;
     if(be) throw be;
     _brands = bd || [];
+    _wunschById = {};
+    _brands.forEach(b => { _wunschById[b.marken_id] = Array.isArray(b.wunsch_vertriebskanaele) ? b.wunsch_vertriebskanaele : []; });
   },
   async loadProducts(){
     // Produkte paginiert laden — PostgREST liefert max. 1000 Zeilen pro Request,
@@ -1306,7 +1312,7 @@ function prefetchBrand(id){
 // Sortimentswelten (seit 2026-07-13, Mapping siehe Brandpool/kategorien-abgleich.xlsx;
 // Rollback: archiv/kategorien-rollback-2026-07-13.sql)
 const HAUPT_ORDER = ['Food & Feinkost','Kosmetik & Körperpflege','Wohnen & Deko','Kerzen & Raumduft','Küche & Haushalt','Mode & Accessoires','Kinder, Baby & Spiel','Geschenke, Souvenirs & Regionales','Papeterie, Kunst & Print','Garten, Grill & DIY','Sport, Freizeit & Outdoor','Gesundheit & Wellness','Technik, Smart Home & Auto','Tierbedarf'];
-let FILTER = {haupt:null, unter:null};
+let FILTER = {haupt:null, unter:null, mine:false};
 let TAXO = [];
 let BRANDCATS = {};
 let lastFilterCount = 0;
@@ -1324,7 +1330,30 @@ function buildTaxo(){
   const keys = Object.keys(subs).sort((a,b)=>{ const ia=HAUPT_ORDER.indexOf(a),ib=HAUPT_ORDER.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib); });
   TAXO = keys.map(h=>({haupt:h, subs:[...subs[h]].sort((a,b)=>a.localeCompare(b,'de'))}));
 }
+// ---- Personalisiertes Matching: Haendler-Branche <-> Marken-Wunschkanal ----
+// Branchen des eingeloggten Haendlers als Array (ohne "Sonstiges"), sonst null.
+function getMyBranches(){
+  const raw = session && session.profile && session.profile.branch;
+  if(!raw) return null;
+  const arr = String(raw).split(',').map(s=>s.trim()).filter(x=>x && x.toLowerCase()!=='sonstiges');
+  return arr.length ? arr : null;
+}
+let _defaultMineDone = false;
+// Einmalig: eingeloggte Haendler mit Branche starten im personalisierten Tag.
+function maybeSetDefaultMine(){
+  if(_defaultMineDone) return;
+  if(getMyBranches()){
+    _defaultMineDone = true;
+    FILTER = {haupt:null, unter:null, mine:true};
+    if(document.getElementById('filterbar')) renderFilterBar();
+  }
+}
 function brandPasses(id){
+  if(FILTER.mine){
+    const my = getMyBranches(); if(!my) return false;
+    const w = _wunschById[id] || [];
+    return w.some(x => my.indexOf(x) !== -1);
+  }
   if(!FILTER.haupt) return true;
   const bc = BRANDCATS[id]; if(!bc) return false;
   if(!bc.h.has(FILTER.haupt)) return false;
@@ -1333,7 +1362,10 @@ function brandPasses(id){
 }
 function renderFilterBar(){
   const bar=document.getElementById('filterbar'); if(!bar) return;
-  let r1=`<div class="filter-row"><button class="fchip ${!FILTER.haupt?'active':''}" onclick="setHaupt(null)">Alle Lieferanten</button>`;
+  const _my = getMyBranches();
+  let r1=`<div class="filter-row">`;
+  if(_my){ r1+=`<button class="fchip fchip-mine ${FILTER.mine?'active':''}" onclick="setMine()">✨ Marken, die bei dir verkaufen wollen</button>`; }
+  r1+=`<button class="fchip ${(!FILTER.haupt && !FILTER.mine)?'active':''}" onclick="setHaupt(null)">Alle Lieferanten</button>`;
   TAXO.forEach(t=>{ r1+=`<button class="fchip ${FILTER.haupt===t.haupt?'active':''}" onclick="setHaupt('${jsq(t.haupt)}')">${escTxt(t.haupt)}</button>`; });
   r1+=`</div>`;
   let r2='';
@@ -1365,23 +1397,27 @@ function renderSearchFilterBadge(){
 }
 function renderMobileBtn(){
   const val=document.getElementById('fbVal'), badge=document.getElementById('fbBadge'); if(!val) return;
-  if(FILTER.haupt){ val.textContent=FILTER.unter?FILTER.haupt+' › '+FILTER.unter:FILTER.haupt; badge.style.display=''; badge.textContent=FILTER.unter?'2':'1'; }
+  if(FILTER.mine){ val.textContent='Für dich empfohlen'; badge.style.display='none'; }
+  else if(FILTER.haupt){ val.textContent=FILTER.unter?FILTER.haupt+' › '+FILTER.unter:FILTER.haupt; badge.style.display=''; badge.textContent=FILTER.unter?'2':'1'; }
   else { val.textContent='Alle Lieferanten'; badge.style.display='none'; }
 }
-function setHaupt(h){ FILTER.haupt=h; FILTER.unter=null; renderFilterBar(); renderBrands(); }
+function setMine(){ FILTER={haupt:null,unter:null,mine:true}; renderFilterBar(); renderFilterSheet(); renderBrands(); }
+function setHaupt(h){ FILTER.mine=false; FILTER.haupt=h; FILTER.unter=null; renderFilterBar(); renderBrands(); }
 function setUnter(u){ FILTER.unter=u; renderFilterBar(); renderBrands(); }
-function resetFilter(){ FILTER={haupt:null,unter:null}; renderFilterBar(); renderFilterSheet(); renderBrands(); }
+function resetFilter(){ FILTER={haupt:null,unter:null,mine:false}; renderFilterBar(); renderFilterSheet(); renderBrands(); }
 function renderFilterSheet(){
   const body=document.getElementById('filterSheetBody'); if(!body) return;
-  let h=`<div class="fs-item ${!FILTER.haupt?'open':''}"><button class="fs-haupt ${!FILTER.haupt?'sel':''}" onclick="setHaupt(null);renderFilterSheet()">Alle Lieferanten</button></div>`;
+  const _my = getMyBranches();
+  let h = _my ? `<div class="fs-item ${FILTER.mine?'open':''}"><button class="fs-haupt fs-mine ${FILTER.mine?'sel':''}" onclick="setMine();closeFilterSheet()">✨ Marken, die bei dir verkaufen wollen</button></div>` : '';
+  h+=`<div class="fs-item ${(!FILTER.haupt&&!FILTER.mine)?'open':''}"><button class="fs-haupt ${(!FILTER.haupt&&!FILTER.mine)?'sel':''}" onclick="setHaupt(null);renderFilterSheet()">Alle Lieferanten</button></div>`;
   TAXO.forEach(t=>{
     const open=FILTER.haupt===t.haupt;
     h+=`<div class="fs-item ${open?'open':''}"><button class="fs-haupt ${open?'sel':''}" onclick="toggleSheetHaupt('${jsq(t.haupt)}')"><span class="chev">›</span>${escTxt(t.haupt)}</button><div class="fs-subs"><button class="fs-sub ${open&&!FILTER.unter?'sel':''}" onclick="pickSheetSub('${jsq(t.haupt)}',null)">Alle in ${escTxt(t.haupt)}</button>${t.subs.map(s=>`<button class="fs-sub ${FILTER.haupt===t.haupt&&FILTER.unter===s?'sel':''}" onclick="pickSheetSub('${jsq(t.haupt)}','${jsq(s)}')">${escTxt(s)}</button>`).join('')}</div></div>`;
   });
   body.innerHTML=h;
 }
-function toggleSheetHaupt(hp){ if(FILTER.haupt===hp){ FILTER.haupt=null; FILTER.unter=null; } else { FILTER.haupt=hp; FILTER.unter=null; } renderFilterBar(); renderFilterSheet(); renderBrands(); }
-function pickSheetSub(hp,u){ FILTER.haupt=hp; FILTER.unter=u; renderFilterBar(); renderFilterSheet(); renderBrands(); }
+function toggleSheetHaupt(hp){ FILTER.mine=false; if(FILTER.haupt===hp){ FILTER.haupt=null; FILTER.unter=null; } else { FILTER.haupt=hp; FILTER.unter=null; } renderFilterBar(); renderFilterSheet(); renderBrands(); }
+function pickSheetSub(hp,u){ FILTER.mine=false; FILTER.haupt=hp; FILTER.unter=u; renderFilterBar(); renderFilterSheet(); renderBrands(); }
 function openFilterSheet(){ renderFilterSheet(); document.getElementById('filterSheetOv').classList.add('open'); document.getElementById('filterSheet').classList.add('open'); }
 function closeFilterSheet(){ document.getElementById('filterSheetOv').classList.remove('open'); document.getElementById('filterSheet').classList.remove('open'); }
 function updateApplyBtn(){ const b=document.getElementById('fsApplyBtn'); if(b) b.textContent='Anzeigen'; }
@@ -1402,6 +1438,7 @@ function logSearch(q, count){
 }
 // Empty-State: Wunsch-Feld, wenn eine Suche/ein Filter aktiv war und nichts gefunden wurde.
 function emptyStateHtml(M){
+  if(FILTER.mine && !M.active) return '<div class="no-results">Aktuell möchte noch keine Marke gezielt in deiner Branche verkaufen. Schau dir unter „Alle Lieferanten" das komplette Sortiment an.</div>';
   if(!M.active && !FILTER.haupt) return '<div class="no-results">Keine Lieferanten gefunden.</div>';
   const q = M.active ? M.q : '';
   const forText = q ? ' für „' + escTxt(q) + '"' : '';
@@ -1440,6 +1477,7 @@ async function submitProductWish(){
     '<div class="wish-box"><div class="wish-emoji">✅</div><div class="wish-title">' + thanks + '</div></div>';
 }
 function renderBrands(){
+  maybeSetDefaultMine();
   if(!_brands){ return; }
   const M = makeMatcher(document.getElementById('brandSearch').value);
   const q = M.q;
@@ -2260,7 +2298,7 @@ async function submitProfile(){
     if(!ok){ err.textContent = 'Profil konnte nicht gespeichert werden. Bitte erneut versuchen.'; err.style.display=''; return; }
     renderAuth(); renderCart(); if(_brands) renderBrands();
     document.getElementById('profilePopup').classList.remove('open');
-    if(profileEditMode){ profileEditMode = false; } else { openRequest(); }
+    if(profileEditMode){ profileEditMode = false; if(!document.getElementById('drawer').classList.contains('open')) document.getElementById('overlay').classList.remove('open'); } else { openRequest(); }
     return;
   }
   // Nicht eingeloggt -> Code an die angegebene E-Mail senden
