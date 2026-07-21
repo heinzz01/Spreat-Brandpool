@@ -2164,14 +2164,18 @@ function closeRequestsOverview(){
 }
 
 /* ---- Branche (Mehrfachauswahl) ---- */
-const BRANCHES = ['Concept Store / Geschenke','Drogerie, Kosmetik & Beauty','Parfümerie',
-  'Apotheke / Sanitätshaus','Reformhaus / Bio & Nachhaltigkeit','Lebensmittel & Feinkost',
-  'Getränke & Spirituosen','Bäckerei / Café / Konditorei','Hotel & Gastronomie',
-  'Tankstelle / Kiosk / Convenience','Mode & Accessoires','Schuhe & Lederwaren','Schmuck & Uhren',
-  'Sport, Outdoor & Fahrrad','Spielwaren & Modellbau','Baby & Kind','Buch, Schreibwaren & Papeterie',
-  'Haushalt, Küche & Wohnen','Möbel & Einrichtung / Deko','Elektronik & Technik',
-  'Bau-, Garten- & Heimwerkermarkt','Blumen / Floristik','Tierbedarf / Zoofachhandel',
-  'Friseur / Barber / Kosmetikstudio','Souvenir & Tourismus','Sonstiges'];
+// Gemeinsame Liste mit der Marken-/Lieferanten-Registrierung (Wunsch-Vertriebskanal).
+// STRINGS MÜSSEN IDENTISCH zu CHANNELS im markenpool-form bleiben, sonst bricht das
+// Matching "Marke will bei diesem Händler verkaufen" (Array-Vergleich).
+const BRANCHES = ['Supermarkt','Discounter','Bioladen / Reformhaus','Feinkostladen','Weinhandlung',
+  'Getränke & Spirituosen','Bäckerei','Café / Coffeeshop','Restaurant / Bar','Hotel',
+  'Drogerie','Parfümerie','Apotheke','Friseur','Kosmetikstudio',
+  'Mode-Boutique','Schuhladen','Schmuck- & Uhrengeschäft',
+  'Concept Store','Geschenkeladen','Möbel- & Wohnaccessoires-Store','Haushalt & Küche','Blumen / Floristik',
+  'Spielwarengeschäft','Baby & Kind','Buchhandlung','Schreibwaren',
+  'Sportgeschäft','Fitnessstudio','Yoga- & Wellnessstudio','Museumsshop',
+  'Tankstellenshop','Kiosk / Spätkauf','Bahnhofsshop / Travel Retail','Souvenir- / Tourismusshop',
+  'Baumarkt','Gartencenter','Tierhandlung','Elektronik & Technik','Sonstiges'];
 let selectedBranches = new Set();
 let profileEditMode = false;
 function renderBranchChips(){
